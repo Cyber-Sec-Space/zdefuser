@@ -28,8 +28,7 @@ body {
   background-color: var(--background);
   color: var(--text-primary);
   height: 100vh;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   -webkit-font-smoothing: antialiased;
   /* Add a very subtle gradient mesh at the top */
   background-image: radial-gradient(circle at 50% -20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
@@ -37,25 +36,26 @@ body {
 
 #root {
   width: 100%;
-  min-height: 100%;
+  height: 100%;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .app-container {
   width: 100%;
   max-width: 640px;
-  padding: 4rem 2rem 2rem 2rem;
-  margin: auto 0;
+  height: 100vh;
+  padding: 2.5rem 2rem;
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 1.5rem;
   animation: fade-in 0.6s ease-out;
 }
 
 .header {
   text-align: center;
+  flex-shrink: 0;
 }
 
 .header h1 {
@@ -83,6 +83,10 @@ body {
 
 .main-content {
   width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 @keyframes fade-in {

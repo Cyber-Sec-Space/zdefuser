@@ -1,7 +1,9 @@
 .progress-panel {
   display: flex;
   flex-direction: column;
-  height: 480px;
+  flex: 1;
+  min-height: 280px;
+  max-height: 520px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
