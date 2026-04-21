@@ -13,7 +13,7 @@
 
 <h2 id="english">English</h2>
 
-**ZDefuser** is a highly secure archive extraction tool built for engineers and security researchers. By combining unidirectional WebAssembly (Wasm) isolation technology with the native OS interface, it analyzes and extracts `.zip` and `.tar` files of unknown origins within a "purely physically isolated" sandbox. This effectively blocks malicious payloads from penetrating or damaging the host system during the exact moment of decompression.
+**ZDefuser** is a highly secure archive extraction tool built for engineers and security researchers. By combining unidirectional WebAssembly (Wasm) isolation technology with the native OS interface, it analyzes and extracts `.zip`, `.rar`, and `.tar` files of unknown origins within a "purely physically isolated" sandbox. This effectively blocks malicious payloads from penetrating or damaging the host system during the exact moment of decompression.
 
 ### Why ZDefuser?
 Traditional OS archiving tools run with full native file permissions, providing hackers a perfect window for exploitation. ZDefuser drops the payload into a WebAssembly sandbox—completely cut off from networking and native OS calls. This "sterile extraction" guarantees immunity against the **6 classic compression attack vectors**:
@@ -61,7 +61,7 @@ You can run the script `python3 tests/generate_payloads.py` to generate authenti
 
 <h2 id="繁體中文">繁體中文</h2>
 
-**ZDefuser** 是一個為工程師與資安研究員打造的極致安全解壓縮工具。透過整合 WebAssembly (Wasm) 單向隔離技術與原生作業系統介面，它能在「純物理隔離」的虛擬沙箱內剖析未知來源的 `.zip` 與 `.tar` 檔案，有效阻斷惡意程式在解壓縮瞬間造成的系統滲透與破壞。
+**ZDefuser** 是一個為工程師與資安研究員打造的極致安全解壓縮工具。透過整合 WebAssembly (Wasm) 單向隔離技術與原生作業系統介面，它能在「純物理隔離」的虛擬沙箱內剖析未知來源的 `.zip`、`.rar` 與 `.tar` 檔案，有效阻斷惡意程式在解壓縮瞬間造成的系統滲透與破壞。
 
 ### 為什麼需要 ZDefuser？
 傳統的作業系統解壓工具具備過高的原生檔案權限，這讓駭客有機可乘。ZDefuser 將檔案丟進無實體網路、無作業系統呼叫權限的 WebAssembly 沙箱中進行「無菌抽取」，徹底免疫以下**六大傳統解壓縮攻擊向量**：

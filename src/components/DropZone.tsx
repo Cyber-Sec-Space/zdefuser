@@ -23,8 +23,8 @@ export const DropZone: React.FC<DropZoneProps> = ({ onAnalyzeStarted }) => {
   };
 
   const processFile = async (filePath: string) => {
-    if (!filePath.endsWith('.zip') && !filePath.endsWith('.tar') && !filePath.endsWith('.tar.gz') && !filePath.endsWith('.tgz')) {
-      setError('Unsupported file type. Please use .zip, .tar, or .tgz');
+    if (!filePath.endsWith('.zip') && !filePath.endsWith('.tar') && !filePath.endsWith('.tar.gz') && !filePath.endsWith('.tgz') && !filePath.endsWith('.rar')) {
+      setError('Unsupported file type. Please use .zip, .rar, .tar, or .tgz');
       return;
     }
     
@@ -50,7 +50,7 @@ export const DropZone: React.FC<DropZoneProps> = ({ onAnalyzeStarted }) => {
         multiple: false,
         filters: [{
           name: 'Archives',
-          extensions: ['zip', 'tar', 'tgz', 'gz']
+          extensions: ['zip', 'rar', 'tar', 'tgz', 'gz']
         }]
       });
       if (typeof selected === 'string') {

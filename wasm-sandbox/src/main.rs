@@ -44,16 +44,10 @@ fn main() {
         };
 
         if let Err(e) = result {
-             let (code, details) = if e.starts_with("PASSWORD_REQUIRED:") {
-                 ("PASSWORD_REQUIRED", e.trim_start_matches("PASSWORD_REQUIRED:").trim().to_string())
-             } else {
-                 ("EXTRACT_FAILED", e)
-             };
-
-             SandboxEvent::Error {
-                 code: code.to_string(),
-                 details
-             }.send();
+            SandboxEvent::Error {
+                code: "EXTRACT_FAILED".to_string(),
+                details: e,
+            }.send();
         }
     } else {
         SandboxEvent::Error {

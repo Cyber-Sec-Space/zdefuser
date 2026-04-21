@@ -186,10 +186,59 @@ pub fn extract_tar(archive_path: &str, output_dir: &str, is_gz: bool, limits: &H
     Ok(())
 }
 
-pub fn extract_rar(archive_path: &str, _output_dir: &str, _password: Option<&str>, _limits: &HostLimit) -> Result<(), String> {
-    SandboxEvent::Error {
-        code: "RAR_NOT_SUPPORTED_YET".to_string(),
-        details: format!("Currently running on wasm32-wasip1. Pure-Rust RAR library limits prevent parsing {} natively without C/C++ bindings in WASI.", archive_path),
+pub fn extract_rar(archive_path: &str, output_dir: &str, password: Option<&str>, limits: &HostLimit) -> Result<(), String> {
+    let pwd = password.unwrap_or("");
+    let mut sec_ctx = SecurityContext::new(limits.max_ratio, limits.max_total_bytes, limits.max_files);
+
+    // rar crate expects trailing slash for the output directory
+    let out_dir = if output_dir.ends_with('/') {
+        output_dir.to_string()
+    } else {
+        format!("{}/", output_dir)
+    };
+
+    let archive = match rar::Archive::extract_all(archive_path, &out_dir, pwd) {
+        Ok(a) => a,
+        Err(e) => {
+            let msg = format!("{:?}", e);
+            if msg.contains("Password") || msg.contains("Checksum") {
+                let err_str = format!("Password required or invalid for encrypted archive. Detailed Error: {:?}", e);
+                SandboxEvent::Error { code: "PASSWORD_REQUIRED".to_string(), details: err_str.clone() }.send();
+                return Err(err_str);
+            }
+            return Err(format!("Failed to extract RAR: {:?}", e));
+        }
+    };
+
+    let total_files = archive.files.len() as u32;
+
+    for (i, file) in archive.files.iter().enumerate() {
+        let filename = file.name.clone();
+        
+        let uncompressed_size = file.unpacked_size as u64;
+        let compressed_size = file.head.pack_size as u64;
+
+        if let Err(err_code) = sec_ctx.record_and_check(compressed_size, uncompressed_size) {
+            SandboxEvent::Error {
+                code: err_code.to_string(),
+                details: format!("limits exceeded. {} > {}", uncompressed_size, compressed_size),
+            }.send();
+            return Err("Aborted due to security threshold".to_string());
+        }
+
+        SandboxEvent::Progress {
+            current: (i + 1) as u32,
+            total: total_files,
+            file: filename,
+            bytes: uncompressed_size,
+        }.send();
+    }
+
+    SandboxEvent::Complete {
+        files_extracted: sec_ctx.extracted_files,
+        files_blocked: sec_ctx.blocked_files,
+        total_bytes: sec_ctx.extracted_bytes,
     }.send();
-    Err("RAR decompression is not currently implemented in this WASM build.".to_string())
+
+    Ok(())
 }
