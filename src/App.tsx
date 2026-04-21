@@ -36,6 +36,7 @@ function App() {
          const path = event.payload.paths[0];
          handleAnalyzeStarted(path);
          try {
+           // We don't have a password prompt for global drag-drop yet so it's undefined
            await invoke('analyze_archive', { archivePath: path });
          } catch(e) {
            setHasError(true);
@@ -52,7 +53,7 @@ function App() {
     };
   }, [isProcessing]);
 
-  const handleAnalyzeStarted = (_path: string) => {
+  const handleAnalyzeStarted = (_path: string, _password?: string) => {
     setIsProcessing(true);
     setEvents([]);
     setIsComplete(false);

@@ -44,8 +44,35 @@ describe('DropZone Component', () => {
     });
     
     expect(open).toHaveBeenCalled();
-    expect(mockOnAnalyzeStarted).toHaveBeenCalledWith('/fake/path/test.zip');
-    expect(invoke).toHaveBeenCalledWith('analyze_archive', { archivePath: '/fake/path/test.zip' });
+    expect(mockOnAnalyzeStarted).toHaveBeenCalledWith('/fake/path/test.zip', undefined);
+    expect(invoke).toHaveBeenCalledWith('analyze_archive', { archivePath: '/fake/path/test.zip', password: undefined });
+  });
+
+  it('handles successful file selection with password', async () => {
+    (open as jest.Mock).mockResolvedValue('/fake/path/test.zip');
+    (invoke as jest.Mock).mockResolvedValue(true);
+    
+    const { container } = render(<DropZone onAnalyzeStarted={mockOnAnalyzeStarted} />);
+    
+    // Type password
+    const pwdInput = screen.getByPlaceholderText('Archive password (optional)');
+    fireEvent.change(pwdInput, { target: { value: 'secret123' } });
+
+    // Ensure clicking password input stop propagation doesn't trigger open dialog
+    fireEvent.click(pwdInput);
+    expect(open).not.toHaveBeenCalled();
+
+    // Trigger select
+    const dropZone = container.firstChild as HTMLElement;
+    fireEvent.click(dropZone);
+    
+    await act(async () => {
+      await new Promise(process.nextTick);
+    });
+    
+    expect(open).toHaveBeenCalled();
+    expect(mockOnAnalyzeStarted).toHaveBeenCalledWith('/fake/path/test.zip', 'secret123');
+    expect(invoke).toHaveBeenCalledWith('analyze_archive', { archivePath: '/fake/path/test.zip', password: 'secret123' });
   });
 
   it('handles invalid file extension', async () => {

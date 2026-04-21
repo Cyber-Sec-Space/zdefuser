@@ -9,7 +9,7 @@ use crate::release;
 pub struct SandboxState(pub std::sync::Mutex<Option<std::sync::Arc<SandboxEnv>>>);
 
 #[tauri::command]
-pub async fn analyze_archive(app: AppHandle, state: tauri::State<'_, SandboxState>, archive_path: String) -> Result<(), String> {
+pub async fn analyze_archive(app: AppHandle, state: tauri::State<'_, SandboxState>, archive_path: String, password: Option<String>) -> Result<(), String> {
     let env = std::sync::Arc::new(SandboxEnv::new().map_err(|e| e.to_string())?);
     
     // Copy the archive into the sandbox, preserving the filename
@@ -26,7 +26,8 @@ pub async fn analyze_archive(app: AppHandle, state: tauri::State<'_, SandboxStat
         "action": "extract",
         "archive_path": sandbox_file_path,
         "output_dir": "/sandbox/output/",
-        "limits": limits
+        "limits": limits,
+        "password": password
     }).to_string();
 
     let (tx, mut rx) = tokio::sync::mpsc::channel(100);

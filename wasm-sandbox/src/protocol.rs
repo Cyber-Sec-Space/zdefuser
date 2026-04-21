@@ -13,6 +13,7 @@ pub struct HostCommand {
     pub archive_path: String,
     pub output_dir: String,
     pub limits: HostLimit,
+    pub password: Option<String>,
 }
 
 #[derive(Debug, Serialize)]

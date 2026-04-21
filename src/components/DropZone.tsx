@@ -4,12 +4,13 @@ import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
 
 interface DropZoneProps {
-  onAnalyzeStarted: (path: string) => void;
+  onAnalyzeStarted: (path: string, password?: string) => void;
 }
 
 export const DropZone: React.FC<DropZoneProps> = ({ onAnalyzeStarted }) => {
   const [isDragActive, setIsDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [password, setPassword] = useState<string>('');
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -29,8 +30,9 @@ export const DropZone: React.FC<DropZoneProps> = ({ onAnalyzeStarted }) => {
     
     setError(null);
     try {
-      onAnalyzeStarted(filePath);
-      await invoke('analyze_archive', { archivePath: filePath });
+      const pwdArg = password.trim() ? password.trim() : undefined;
+      onAnalyzeStarted(filePath, pwdArg);
+      await invoke('analyze_archive', { archivePath: filePath, password: pwdArg });
     } catch (err) {
       console.error("Failed to analyze:", err);
       setError(String(err));
@@ -79,6 +81,16 @@ export const DropZone: React.FC<DropZoneProps> = ({ onAnalyzeStarted }) => {
           <p>Drop file here or click to browse</p>
         </div>
         
+        <div className="password-wrapper" onClick={(e) => e.stopPropagation()}>
+           <input 
+              type="password" 
+              placeholder="Archive password (optional)" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="password-input"
+           />
+        </div>
+
         {error && <div className="error-bubble">{error}</div>}
       </div>
     </div>

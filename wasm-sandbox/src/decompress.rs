@@ -9,7 +9,7 @@ use flate2::read::GzDecoder;
 use crate::protocol::{HostLimit, SandboxEvent};
 use crate::security::SecurityContext;
 
-pub fn extract_zip(archive_path: &str, output_dir: &str, limits: &HostLimit) -> Result<(), String> {
+pub fn extract_zip(archive_path: &str, output_dir: &str, password: Option<&str>, limits: &HostLimit) -> Result<(), String> {
     let file = File::open(archive_path).map_err(|e| format!("Failed to open Zip: {}", e))?;
     let mut archive = ZipArchive::new(file).map_err(|e| format!("Invalid Zip: {}", e))?;
     let mut sec_ctx = SecurityContext::new(limits.max_ratio, limits.max_total_bytes, limits.max_files);
@@ -18,7 +18,27 @@ pub fn extract_zip(archive_path: &str, output_dir: &str, limits: &HostLimit) -> 
     let out_dir = Path::new(output_dir);
 
     for i in 0..total_files {
-        let mut file = archive.by_index(i).map_err(|e| format!("Failed to read entry: {}", e))?;
+        let mut file = match password {
+            Some(pwd) => {
+                match archive.by_index_decrypt(i, pwd.as_bytes()) {
+                    Ok(f) => f,
+                    Err(zip::result::ZipError::InvalidPassword) => return Err("Invalid Archive Password Provided".to_string()),
+                    Err(e) => return Err(format!("Failed to decrypt entry: {}", e)),
+                }
+            },
+            None => {
+                match archive.by_index(i) {
+                    Ok(f) => f,
+                    Err(zip::result::ZipError::UnsupportedArchive(msg)) if msg.contains("Password required") || msg.contains("encrypted") => {
+                         let err_str = format!("Password required for encrypted archive: {}", msg);
+                         SandboxEvent::Error { code: "PASSWORD_REQUIRED".to_string(), details: err_str.clone() }.send();
+                         return Err(err_str);
+                    },
+                    Err(e) => return Err(format!("Failed to read entry: {}", e)),
+                }
+            }
+        };
+
         let filename = match file.enclosed_name() {
             Some(path) => path.to_owned(),
             None => {
@@ -161,4 +181,12 @@ pub fn extract_tar(archive_path: &str, output_dir: &str, is_gz: bool, limits: &H
     }.send();
 
     Ok(())
+}
+
+pub fn extract_rar(archive_path: &str, _output_dir: &str, _password: Option<&str>, _limits: &HostLimit) -> Result<(), String> {
+    SandboxEvent::Error {
+        code: "RAR_NOT_SUPPORTED_YET".to_string(),
+        details: format!("Currently running on wasm32-wasip1. Pure-Rust RAR library limits prevent parsing {} natively without C/C++ bindings in WASI.", archive_path),
+    }.send();
+    Err("RAR decompression is not currently implemented in this WASM build.".to_string())
 }

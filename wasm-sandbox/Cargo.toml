@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-zip = { version = "2.1", default-features = false, features = ["deflate", "time"] }
+zip = { version = "2.1", default-features = false, features = ["aes-crypto", "deflate", "time"] }
 tar = "0.4"
 flate2 = { version = "1.0", features = ["rust_backend"], default-features = false }
 serde = { version = "1.0", features = ["derive"] }
