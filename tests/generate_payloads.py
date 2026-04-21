@@ -3,6 +3,7 @@ import os
 import zipfile
 import tarfile
 import random
+import subprocess
 
 def ensure_dir(path):
     if not os.path.exists(path):
@@ -55,6 +56,26 @@ def create_executable_hijack(output_dir):
         tar.add("script.sh", arcname="trigger_malware.sh")
     os.remove("script.sh")
 
+def create_encrypted_secret(output_dir):
+    zip_path = os.path.join(output_dir, '05_encrypted_secret.zip')
+    print(f"Generating {zip_path} (Password: infected)...")
+    
+    # We use subprocess to call system zip since Python's zipfile doesn't support encryption natively
+    with open("secret_malware.txt", "w") as f:
+        f.write("CONGRATULATIONS. YOU SUCCESSFULLY DECRYPTED THE PAYLOAD THROUGH THE SANDBOX VIP GATE.")
+    
+    if os.path.exists(zip_path):
+        os.remove(zip_path)
+        
+    try:
+        subprocess.run(['zip', '-j', '-P', 'infected', zip_path, 'secret_malware.txt'], 
+                       check=True, stdout=subprocess.DEVNULL)
+    except Exception as e:
+        print(f"⚠️ Could not generate encrypted zip. Ensure 'zip' CLI tool is installed. Error: {e}")
+        
+    if os.path.exists("secret_malware.txt"):
+        os.remove("secret_malware.txt")
+
 def main():
     payloads_dir = os.path.join(os.path.dirname(__file__), 'payloads')
     ensure_dir(payloads_dir)
@@ -63,6 +84,7 @@ def main():
     create_zip_bomb(payloads_dir)
     create_symlink_attack(payloads_dir)
     create_executable_hijack(payloads_dir)
+    create_encrypted_secret(payloads_dir)
     
     # Clean up old payloads so they don't confuse the test
     if os.path.exists(os.path.join(payloads_dir, 'path_traversal.tar')):
