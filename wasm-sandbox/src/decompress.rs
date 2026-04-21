@@ -29,12 +29,15 @@ pub fn extract_zip(archive_path: &str, output_dir: &str, password: Option<&str>,
             None => {
                 match archive.by_index(i) {
                     Ok(f) => f,
-                    Err(zip::result::ZipError::UnsupportedArchive(msg)) if msg.contains("Password required") || msg.contains("encrypted") => {
-                         let err_str = format!("Password required for encrypted archive: {}", msg);
-                         SandboxEvent::Error { code: "PASSWORD_REQUIRED".to_string(), details: err_str.clone() }.send();
-                         return Err(err_str);
-                    },
-                    Err(e) => return Err(format!("Failed to read entry: {}", e)),
+                    Err(e) => {
+                        let msg = e.to_string();
+                        if msg.contains("Password required") || msg.contains("encrypted") {
+                            let err_str = format!("Password required for encrypted archive: {}", msg);
+                            SandboxEvent::Error { code: "PASSWORD_REQUIRED".to_string(), details: err_str.clone() }.send();
+                            return Err(err_str);
+                        }
+                        return Err(format!("Failed to read entry: {}", msg));
+                    }
                 }
             }
         };
