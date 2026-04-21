@@ -78,7 +78,7 @@ function App() {
           </svg>
           Z<span className="text-gradient">Defuser</span>
         </h1>
-        <p>Zero-Trust Sandboxed Extraction</p>
+        {!isProcessing && <p>Zero-Trust Sandboxed Extraction</p>}
       </div>
 
       <div className="main-content">
