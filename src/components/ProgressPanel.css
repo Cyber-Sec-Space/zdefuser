@@ -1,0 +1,116 @@
+.progress-panel {
+  display: flex;
+  flex-direction: column;
+  height: 480px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.panel-header {
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  background: var(--background);
+}
+
+.title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.panel-title {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+}
+
+.dot.scanning {
+  background: var(--brand);
+  box-shadow: 0 0 8px var(--brand-glow);
+  animation: pulse-dot 1.5s infinite;
+}
+
+.dot.success { background: #34c759; }
+.dot.error { background: #ff3b30; }
+
+@keyframes pulse-dot {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.progress-bar-container {
+  height: 1px;
+  background: var(--border);
+  width: 100%;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--text-primary);
+  transition: width 0.2s ease-out;
+}
+
+.logs-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem;
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-size: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--surface);
+  line-height: 1.5;
+}
+
+.log-line {
+  word-break: break-all;
+}
+
+.log-line.info { color: var(--text-secondary); }
+
+.log-line.warn { 
+  color: #ffcc00; 
+}
+
+.log-line.error { 
+  color: #ff3b30; 
+}
+
+.log-line.success { 
+  color: #34c759;
+  margin-top: 1rem;
+}
+
+.panel-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  background: var(--background);
+}
