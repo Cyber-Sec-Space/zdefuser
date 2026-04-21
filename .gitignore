@@ -15,6 +15,7 @@ target/
 src-tauri/target/
 wasm-sandbox/target/
 coverage/
+release-artifacts/
 
 # Editor directories and files
 .vscode/*
