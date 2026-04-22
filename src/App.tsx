@@ -88,9 +88,7 @@ function App() {
           </svg>
           <span className="text-gradient">ZDefuser</span>
         </h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          {!isProcessing && <p>Zero-Trust Sandboxed Extraction</p>}
-        </div>
+        {!isProcessing && <p>Zero-Trust Sandboxed Extraction</p>}
       </div>
 
       <div className="main-content">
