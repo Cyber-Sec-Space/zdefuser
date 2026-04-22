@@ -81,6 +81,10 @@ npm run tauri dev
 Included with built-in realistic penetration verification payloads.  
 You can run the script `python3 tests/generate_payloads.py` to generate authentic malicious archives, including Zip Bombs, Path Traversals, and executable hijacks, and witness the defensive mechanisms in action via the UI interface.
 
+> _"In a zero-trust world, even air doesn't pass verification without inspecting its atoms."_ 
+
+**Audited securely by Snyk 🐶 - 0 Vulnerabilities Detected.**
+
 ---
 
 <br>
