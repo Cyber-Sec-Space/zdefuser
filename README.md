@@ -33,7 +33,7 @@ graph TD;
     A[User Drops Archive] --> B(Tauri Backend: Commands Layer);
     B --> C{WASI Sandbox Execution};
     
-    C -->|Extracts in Memory| D[Decompression Engine];
+    C -->|Streaming I/O Extraction| D[Decompression Engine];
     D --> E{Security Context Verification};
     
     E -->|Zip Bomb / 100GB Bypass| F[Trap: Wasm Crash];
