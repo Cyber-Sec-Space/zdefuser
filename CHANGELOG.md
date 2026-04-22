@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - **Enterprise Compliance Section**: Synchronized physical `docs/index.html` and `README.md` to officially declare ZDefuser's Third-Party Notices automated generation schema for MIT/Apache/BSD enterprise adoption.
 
 ### Changed
+- **Wasm STDOUT Overload Prevention (Deadlock Fix)**: Expanded the WASI `MemoryOutputPipe` bound from an arbitrary 10MB limit to 250MB. This mathematically guarantees that ZDefuser will not freeze / deadlock when exporting JSON progress streams for 50GB legitimate archives containing over 500k small files.
 - **Layer 2 Parity Alignment**: Elevated the hardcoded 2GB `validate_extracted_dir` limit inside the Layer 2 release gate to geometrically align with the Layer 1 100GB limitation envelope, thereby restoring functionality for multi-gigabyte legitimately isolated extractions.
 - **Zero-Trust Backend State Strictness**: Patched a critical execution race condition in `src-tauri/src/commands.rs`. The Tauri command now strictly listens for Wasm crash/trap results and immediately aborts the internal React state. This mathematically prevents any partially-extracted malicious payloads from bypassing Layer 2 bounds restrictions.
 - **Unified Attack Vector Documentation**: Audited and upgraded documentation across all channels from 6 to 8 Advanced Threat Vectors, capturing AES Decryption capabilities and precise Execution Target restrictions.

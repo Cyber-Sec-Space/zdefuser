@@ -31,7 +31,8 @@ pub fn run_wasm_sandbox(env: &SandboxEnv, host_json_cmd: String, archive_size: u
         .map_err(|e| format!("Preopen error: {}", e))?;
     
     let stdin = MemoryInputPipe::new(host_json_cmd.into_bytes());
-    let stdout = MemoryOutputPipe::new(10 * 1024 * 1024);
+    // Allocate 250MB buffer to prevent stdout deadlocks when extracting 500k+ files
+    let stdout = MemoryOutputPipe::new(250 * 1024 * 1024);
     
     builder.stdin(stdin);
     builder.stdout(stdout.clone());
