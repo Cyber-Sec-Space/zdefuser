@@ -46,6 +46,7 @@
             <nav>
                 <a href="#features">Features</a>
                 <a href="#how-it-works">How It Works</a>
+                <a href="#installation">Download</a>
                 <a href="https://github.com/Cyber-Sec-Space/zdefuser" class="btn-outline" target="_blank"
                     rel="noopener">GitHub</a>
             </nav>
@@ -63,7 +64,7 @@
                         WebAssembly isolation to physically quarantine archive extraction—guaranteeing 100% protection
                         against zero-day zip bombs, path traversals, and embedded malware.</p>
                     <div class="hero-actions">
-                        <a href="https://github.com/Cyber-Sec-Space/zdefuser/releases/latest"
+                        <a href="#installation"
                             class="btn-primary">Download ZDefuser</a>
                         <a href="#how-it-works" class="btn-secondary">Learn More</a>
                     </div>
@@ -151,6 +152,43 @@
             </div>
         </section>
     </main>
+
+    <!-- Installation -->
+    <section id="installation" class="container" style="margin-top: 4rem; margin-bottom: 4rem;">
+        <div class="section-header fade-in-up">
+            <h2>Download & <span class="text-gradient">Installation</span></h2>
+            <p>ZDefuser is pre-compiled for all major platforms. Grab the latest release from GitHub.</p>
+        </div>
+        <div class="glass-panel fade-in-up" style="padding: 2.5rem;">
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;">
+                    <div>
+                        <h3 style="margin-bottom: 0.5rem;">Cross-Platform Packages</h3>
+                        <ul class="check-list" style="margin-bottom: 0;">
+                            <li><strong>Windows:</strong> <code>.exe</code> and <code>.msi</code> installers</li>
+                            <li><strong>Linux:</strong> <code>.AppImage</code> (Portable) and <code>.deb</code></li>
+                            <li><strong>macOS:</strong> <code>.dmg</code> Apple Silicon & Intel bundles</li>
+                        </ul>
+                    </div>
+                    <a href="https://github.com/Cyber-Sec-Space/zdefuser/releases/latest" class="btn-primary" style="margin-left: auto;">Go to Releases Page</a>
+                </div>
+
+                <div style="border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 1.5rem;">
+                    <h4 style="color: #FF7A7A; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        macOS Security Notice (Unsigned App)
+                    </h4>
+                    <p style="font-size: 0.95rem; color: rgba(255, 255, 255, 0.7); margin-bottom: 1rem;">
+                        Because this application is not natively code-signed with an Apple Developer Certificate, Gatekeeper will block the app upon first launch with a warning like "App is damaged and can't be opened" or "Unidentified Developer".
+                    </p>
+                    <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 1rem;">
+                        <p style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255, 255, 255, 0.5); margin-bottom: 0.5rem;">To fix this, open your Terminal and run:</p>
+                        <code style="font-family: monospace; color: #7A82FF; font-size: 1.1rem; word-break: break-all;">xattr -cr /Applications/ZDefuser.app</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <footer>
         <div class="container footer-content glass-panel">

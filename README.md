@@ -56,6 +56,19 @@ graph TD;
 ### 📜 Enterprise Legal Compliance
 ZDefuser is architected for Enterprise and Commercial distribution. It features an automated Third-Party License orchestration pipeline (`generate_licenses.py`) integrated into the build process. All MIT, Apache, and BSD dependencies are automatically audited and injected into the in-app "About & Legal" compliance interface, ensuring **100% copyright and licensing compliance** out of the box.
 
+### 📥 Download & Installation
+You can grab the latest pre-compiled binaries from the **[GitHub Releases](https://github.com/Cyber-Sec-Space/zdefuser/releases)** page. We offer cross-platform support:
+- **Windows**: `.exe` and `.msi` installers.
+- **Linux**: `.AppImage` (Portable) and `.deb` (Debian/Ubuntu) packages.
+- **macOS**: `.dmg` bundles.
+
+> **🍎 macOS Security Notice (Unsigned App):**
+> Because this application is not natively code-signed with an Apple Developer Certificate, Gatekeeper will block the app upon first launch with a warning like "App is damaged and can't be opened".
+> **To fix this:** open your Terminal and run the following command to remove the quarantine attribute:
+> ```bash
+> xattr -cr /Applications/ZDefuser.app
+> ```
+
 ### Development & Build Instructions
 Ensure you have the Node.js and Rust toolchains (including the `wasm32-wasip1` target) installed.
 
@@ -133,6 +146,19 @@ graph TD;
 
 ### 📜 企業級合規性 (Enterprise Compliance)
 ZDefuser 專為企業採購與商業軟體市場打造。專案內建了全自動化的第三方開源條款稽核系統 (`generate_licenses.py`)，能在編譯打包階段自動統整所有 Rust/NPM 相依套件，並將其注入至應用程式內的「About & Legal」視窗中，**100% 滿足 MIT / Apache / BSD 的最終開源分發合規要求**。
+
+### 📥 下載與安裝 (Download & Installation)
+您可以直接前往專案的 **[GitHub Releases](https://github.com/Cyber-Sec-Space/zdefuser/releases)** 頁面下載最新編譯完成的跨平台安裝包：
+- **Windows**: 提供 `.exe` 取代檔與 `.msi` 安裝檔。
+- **Linux**: 提供 `.AppImage` (免安裝執行檔) 與 `.deb` (Debian/Ubuntu)。
+- **macOS**: 提供 `.dmg` 映像安裝檔。
+
+> **🍎 macOS 開啟失敗解決方案 (無數位憑證)：**
+> 由於目前專案尚未掛載 Apple 開發者數位憑證 (Apple Developer Certificate)，macOS 的安全機制 (Gatekeeper) 可能會跳出「檔案已損壞無法開啟」或「無法識別的開發者」的警告。
+> **修復方法：** 請開啟終端機 (Terminal)，並執行以下指令來解除隔離屬性（假設您已拖曳至「應用程式」目錄）：
+> ```bash
+> xattr -cr /Applications/ZDefuser.app
+> ```
 
 ### 如何安裝與建置 (Development)
 首先確保您已安裝了 Node.js 與 Rust 工具鏈（含 `wasm32-wasip1` target）。
