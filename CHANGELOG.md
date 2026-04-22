@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.0.0-rc.3] - 2026-04-22
+## [1.0.0] - 2026-04-22
 
 ### Added
 - **Dynamic Compute Rationing (Fuel)**: Implemented an intelligent Wasmtime fuel allocation engine that scales dynamically with compressed archive size. Safely supports massive (e.g., 50GB) legitimate archives while instantly terminating highly-compressed zero-day logic bombs.
@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 - **Enterprise Compliance Section**: Synchronized physical `docs/index.html` and `README.md` to officially declare ZDefuser's Third-Party Notices automated generation schema for MIT/Apache/BSD enterprise adoption.
 
 ### Changed
+- **Windows MSI Bundler Compatibility**: Bumped the release tag format strictly to `1.0.0` (removing the `-rc.X` pre-release identifier) because the Windows WiX compiler engine rigidly rejects non-numeric pre-release strings during MSI package generation, resulting in a 65535 overflow error. 
+- **GitHub Actions Security Tokens**: Explicitly elevated `GITHUB_TOKEN` privileges inside `.github/workflows/release.yml` with `permissions: contents: write` so that the cloud runners are legally authorized to publish drafted assets to the GitHub Releases page.
 - **Submodule Vendoring (CI Resiliency)**: Fully decoupled ZDefuser from the external GitHub repository for the `rar` library by permanently vendoring its patched source code into our native Git tree. This immediately rectifies the `fatal: No url found for submodule path` errors across all GitHub Actions builder matrices by preventing reliance on broken or untracked upstream Git modules.
 - **Housekeeping & Git Tree Optimization**: Conducted a final repository sweep to scrub orphaned artifacts and temporary test scripts (`test_rar_pwd.rs`, `test_rar_src.rs`) that were accidentally tracked. Revamped `.gitignore` to implement robust enterprise-grade exclusions across macOS `.DS_Store`, Windows `Thumbs.db`, Rust specific target patterns, and Vite/Jest telemetry, guaranteeing that future code pushes remain perfectly sterile.
 - **CI/CD Build Pipeline (Multi-Platform Releases)**: Integrated a comprehensive GitHub Actions workflow (`.github/workflows/release.yml`) to automatically compile and package enterprise-grade releases for Windows (`.msi`, `.exe`) and Linux (`.AppImage`, `.deb`) directly on native cloud runners. This circumvents macOS cross-compilation linker failures (e.g., missing MSVC / WebKit2GTK dependencies) and natively generates Zero-Trust extraction packages directly attached to GitHub Releases.
