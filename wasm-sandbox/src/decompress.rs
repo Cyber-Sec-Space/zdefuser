@@ -64,6 +64,16 @@ pub fn extract_zip(archive_path: &str, output_dir: &str, password: Option<&str>,
             continue;
         }
 
+        if file.is_symlink() {
+            SandboxEvent::Warning {
+                code: "SYMLINK_IGNORED".to_string(),
+                file: filename.display().to_string(),
+                details: "Symlinks are zero-tolerance dropped for security".to_string(),
+            }.send();
+            sec_ctx.blocked_files += 1;
+            continue;
+        }
+
         let compressed_size = file.compressed_size();
         let uncompressed_size = file.size();
 

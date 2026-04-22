@@ -97,7 +97,7 @@ You can run the script `python3 tests/generate_payloads.py` to generate authenti
 3. 🔗 **符號連結 (Symlink) 隔離**：對非法目錄參照與符號捷徑做到零容忍丟棄，防護主機私鑰與配置檔遭到無痕竊取。
 4. 🛡 **任意代碼執行 (RCE/Buffer Overflow) 免疫**：就算底層解壓涵式庫發生緩衝區溢位，也只會導致 Wasm 線性記憶體陷阱崩潰，物理上絕對無法滲透宿主機。
 5. 🪟 **Unicode 視覺詐騙 (RTLO) 防護**：過濾掉在檔名中安插的 U+202E 逆向反轉字元，讓偽裝成 `.docx` 的惡意可執行檔原形畢露並強行拋棄。
-6. 🔒 **剝除可執行權限 (Executable Bit Retention - 限 Unix 系統)**：經過 Layer 3 釋放閘道 (Release Gate)，駭客植入的隱形 `+x` 可執行權限會被強制扒除，將腳本檔案降級為無害純文字。
+6. 🔒 **剝除可執行權限 (Executable Bit Stripping - 限 Unix 系統)**：經過 Layer 3 釋放閘道 (Release Gate)，駭客植入的隱形 `+x` 可執行權限會被強制扒除，將腳本檔案降級為無害純文字。
 7. 🗄️ **加密向量中和 (Encrypted Vector Neutralization)**：完美安全處理附加密碼的 AES ZIP 與 RAR。即使解壓縮過程包含惡意負載或偽造的校驗碼，所有的解密運算與演算法審核皆強制關押在無菌隔離區內進行。
 8. 🕵️ **網路外洩阻隔 (No Network Leakage)**：徹底閹割 WASI 的網路通訊協定，從根源確保被解壓縮的間諜軟體絕對無法連回外部指令與控制 (C2) 伺服器傳送資料。
 
