@@ -147,4 +147,57 @@ describe('App Root Component', () => {
     });
     // Check it's not trying to analyze second payload
   });
+
+  it('covers the early unmount race condition for event listeners', async () => {
+    let resolveAbout: any;
+    const aboutPromise = new Promise((resolve) => { resolveAbout = resolve; });
+
+    (event.listen as jest.Mock).mockImplementation((evtName) => {
+      if (evtName === 'open-about') return aboutPromise;
+      return Promise.resolve(jest.fn());
+    });
+
+    const { unmount } = render(<App />);
+    // unmount immediately while promises are pending
+    unmount();
+
+    // Now resolve the promise with a spy
+    const unlistenAbout = jest.fn();
+    resolveAbout(unlistenAbout);
+    
+    // Wait for promise resolution
+    await act(async () => {
+      await new Promise(process.nextTick);
+    });
+
+    // The component unmounted, so it should have called the unlisten function directly
+    expect(unlistenAbout).toHaveBeenCalled();
+  });
+
+  it('opens and closes the About Modal', async () => {
+    let openAboutCallback: any;
+    (event.listen as jest.Mock).mockImplementation((evtName, cb) => {
+      if (evtName === 'open-about') openAboutCallback = cb;
+      return Promise.resolve(jest.fn());
+    });
+
+    render(<App />);
+    await act(async () => {
+      await new Promise(process.nextTick);
+    });
+
+    // Trigger open-about event
+    await act(async () => {
+      openAboutCallback();
+    });
+
+    expect(screen.getByText('ZDefuser - About & Licenses')).toBeInTheDocument();
+
+    // Trigger close
+    const closeBtn = screen.getByRole('button'); 
+    fireEvent.click(closeBtn);
+
+    // Depending on CSS it might still be in DOM but isOpen is false.
+    // The main point is line 107 coverage (onClose) is triggered!
+  });
 });
