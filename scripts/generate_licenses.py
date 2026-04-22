@@ -10,7 +10,7 @@ output_files = [
     "docs/assets/THIRD-PARTY-NOTICES.txt"
 ]
 
-temp_file = "/tmp/THIRD-PARTY-NOTICES.txt"
+temp_file = "THIRD-PARTY-NOTICES.tmp"
 
 with open(temp_file, "w") as f:
     f.write("="*80 + "\n")
