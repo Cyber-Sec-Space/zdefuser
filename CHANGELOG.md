@@ -12,3 +12,4 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Refactored `wasm-sandbox/src/decompress.rs` to smartly route between ZIP, TAR, and now RAR extractors.
 - Modified App UI to remove full-page scrolling and implemented scaling flexbox constraints so the ZDefuser brand text auto-hides processing logs gracefully.
+- Moved the "About & Legal" button from the main UI header to the native OS application menu for a cleaner aesthetic.

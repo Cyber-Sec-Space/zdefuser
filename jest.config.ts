@@ -3,7 +3,8 @@ export default {
   testEnvironment: 'jest-environment-jsdom',
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-    '\\.(gif|ttf|eot|svg|png)$': '<rootDir>/src/__mocks__/fileMock.ts'
+    '\\.(gif|ttf|eot|svg|png)$': '<rootDir>/src/__mocks__/fileMock.ts',
+    '^.*\\?raw$': '<rootDir>/src/__mocks__/rawMock.ts'
   },
   setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
   transform: {

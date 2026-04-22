@@ -20,10 +20,12 @@ describe('App Root Component', () => {
     let dropCallback: any;
     let unlisten1 = jest.fn();
     let unlisten2 = jest.fn();
+    let unlisten3 = jest.fn();
 
     (event.listen as jest.Mock).mockImplementation((evtName, cb) => {
       if (evtName === 'sandbox_event') sandboxCallback = cb;
       if (evtName === 'tauri://drag-drop') dropCallback = cb;
+      if (evtName === 'open-about') return Promise.resolve(unlisten3);
       return Promise.resolve(evtName === 'sandbox_event' ? unlisten1 : unlisten2);
     });
 
@@ -66,6 +68,7 @@ describe('App Root Component', () => {
     unmount();
     expect(unlisten1).toHaveBeenCalled();
     expect(unlisten2).toHaveBeenCalled();
+    expect(unlisten3).toHaveBeenCalled();
   });
 
   it('handles error events properly', async () => {
@@ -75,6 +78,7 @@ describe('App Root Component', () => {
     (event.listen as jest.Mock).mockImplementation((evtName, cb) => {
       if (evtName === 'sandbox_event') sandboxCallback = cb;
       if (evtName === 'tauri://drag-drop') dropCallback = cb;
+      if (evtName === 'open-about') return Promise.resolve(jest.fn());
       return Promise.resolve(jest.fn());
     });
 
@@ -114,6 +118,7 @@ describe('App Root Component', () => {
 
     (event.listen as jest.Mock).mockImplementation((evtName, cb) => {
       if (evtName === 'tauri://drag-drop') dropCallback = cb;
+      if (evtName === 'open-about') return Promise.resolve(jest.fn());
       return Promise.resolve(jest.fn());
     });
 
