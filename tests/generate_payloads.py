@@ -96,8 +96,7 @@ def main():
         
     print(f"All Penetration payloads successfully created in {payloads_dir}")
 
-if __name__ == '__main__':
-    main()
+
 
 def create_malicious_rtlo_zip(output_dir):
     zip_path = os.path.join(output_dir, '06_malicious_rtlo.zip')
@@ -118,3 +117,6 @@ def create_out_of_bounds_rar(output_dir):
         with open(rar_path, "r+b") as f:
             f.seek(50)  
             f.write(b"CORRUPTED_BYTES")
+
+if __name__ == '__main__':
+    main()
