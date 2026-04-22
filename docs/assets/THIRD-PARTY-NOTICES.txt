@@ -109,14 +109,14 @@ furnished to do so, subject to the following conditions:
 T...
 ----------------------------------------
 
-Package: zdefuser@1.0.0
+Package: zdefuser@1.0.0-rc.1
 License: UNLICENSED
 Repository: N/A
 License Text Snippet:
 # 🛡 ZDefuser
 
-> Zero-Trust Sandboxed Extraction for macOS & Windows.  
-> 專屬工程師與資安研究員的終極物理隔離解壓縮防護傘。
+> Zero-Trust Sandboxed Extraction for macOS, Linux, & Windows.  
+> 專屬工程師與資安研究員的跨平台終極物理隔離解壓縮防護傘。
 
 ---
 
@@ -128,13 +128,13 @@ License Text Snippet:
 
 <h2 id="english">English</h2>
 
-**ZDefuser** is a highly secure archive extraction tool built for engineers and security researchers. By combining unidirectional WebAssembly (Wasm) isolation technology with the native OS interface, it analyzes and extracts `.zip`, `.rar`, and `.tar` files of unknown origins within a "purely physically isolated" s...
+**ZDefuser** is a highly secure archive extraction tool built for engineers and security researchers. By combining unidirectional WebAssembly (Wasm) isolation technology with the native OS interface, it analyzes and extracts `.zip`, `.rar`, `.tar`, and `.tar.gz / .tgz` files of unknown origins within a "...
 ----------------------------------------
 
 
 --- RUST (BACKEND) DEPENDENCIES ---
 
-Crate: ZDefuser v0.1.0
+Crate: ZDefuser v1.0.0-rc.1
 License: None
 Repository: None
 ----------------------------------------
@@ -3419,7 +3419,7 @@ License: MIT
 Repository: https://github.com/z-galaxy/zbus/
 ----------------------------------------
 
-Crate: ZDefuser v0.1.0 (WASM Sandbox)
+Crate: ZDefuser v1.0.0-rc.1 (WASM Sandbox)
 License: None
 Repository: None
 ----------------------------------------
