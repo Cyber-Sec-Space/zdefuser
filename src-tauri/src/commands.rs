@@ -63,7 +63,8 @@ pub async fn analyze_archive(app: AppHandle, state: tauri::State<'_, SandboxStat
 
     // Now Layer 2 check
     let release_dir = env.release_dir();
-    if let Err(e) = security::validate_extracted_dir(&release_dir, 2 * 1024 * 1024 * 1024) {
+    // Align Layer 2 max_bytes check with Layer 1 maximum (100GB)
+    if let Err(e) = security::validate_extracted_dir(&release_dir, 100 * 1024 * 1024 * 1024) {
         app.emit("sandbox_event", json!({"type": "error", "code": "LAYER_2_FAIL", "details": e})).unwrap_or(());
         return Err(e);
     }
