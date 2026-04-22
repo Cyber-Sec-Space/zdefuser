@@ -39,10 +39,7 @@ pub enum SandboxEvent {
         total_bytes: u64,
     },
     #[serde(rename = "error")]
-    Error {
-        code: String,
-        details: String,
-    },
+    Error { code: String, details: String },
 }
 
 impl SandboxEvent {

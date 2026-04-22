@@ -2,44 +2,52 @@ use std::fs::{self, File};
 use std::io::{self, Read, copy};
 use std::path::Path;
 
-use zip::ZipArchive;
-use tar::Archive as TarArchive;
 use flate2::read::GzDecoder;
+use tar::Archive as TarArchive;
+use zip::ZipArchive;
 
 use crate::protocol::{HostLimit, SandboxEvent};
 use crate::security::SecurityContext;
 
-pub fn extract_zip(archive_path: &str, output_dir: &str, password: Option<&str>, limits: &HostLimit) -> Result<(), String> {
+pub fn extract_zip(
+    archive_path: &str,
+    output_dir: &str,
+    password: Option<&str>,
+    limits: &HostLimit,
+) -> Result<(), String> {
     let file = File::open(archive_path).map_err(|e| format!("Failed to open Zip: {}", e))?;
     let mut archive = ZipArchive::new(file).map_err(|e| format!("Invalid Zip: {}", e))?;
-    let mut sec_ctx = SecurityContext::new(limits.max_ratio, limits.max_total_bytes, limits.max_files);
+    let mut sec_ctx =
+        SecurityContext::new(limits.max_ratio, limits.max_total_bytes, limits.max_files);
 
     let total_files = archive.len();
     let out_dir = Path::new(output_dir);
 
     for i in 0..total_files {
         let mut file = match password {
-            Some(pwd) => {
-                match archive.by_index_decrypt(i, pwd.as_bytes()) {
-                    Ok(f) => f,
-                    Err(zip::result::ZipError::InvalidPassword) => return Err("Invalid Archive Password Provided".to_string()),
-                    Err(e) => return Err(format!("Failed to decrypt entry: {}", e)),
+            Some(pwd) => match archive.by_index_decrypt(i, pwd.as_bytes()) {
+                Ok(f) => f,
+                Err(zip::result::ZipError::InvalidPassword) => {
+                    return Err("Invalid Archive Password Provided".to_string());
+                }
+                Err(e) => return Err(format!("Failed to decrypt entry: {}", e)),
+            },
+            None => match archive.by_index(i) {
+                Ok(f) => f,
+                Err(e) => {
+                    let msg = e.to_string();
+                    if msg.contains("Password required") || msg.contains("encrypted") {
+                        let err_str = format!("Password required for encrypted archive: {}", msg);
+                        SandboxEvent::Error {
+                            code: "PASSWORD_REQUIRED".to_string(),
+                            details: err_str.clone(),
+                        }
+                        .send();
+                        return Err(err_str);
+                    }
+                    return Err(format!("Failed to read entry: {}", msg));
                 }
             },
-            None => {
-                match archive.by_index(i) {
-                    Ok(f) => f,
-                    Err(e) => {
-                        let msg = e.to_string();
-                        if msg.contains("Password required") || msg.contains("encrypted") {
-                            let err_str = format!("Password required for encrypted archive: {}", msg);
-                            SandboxEvent::Error { code: "PASSWORD_REQUIRED".to_string(), details: err_str.clone() }.send();
-                            return Err(err_str);
-                        }
-                        return Err(format!("Failed to read entry: {}", msg));
-                    }
-                }
-            }
         };
 
         let filename = match file.enclosed_name() {
@@ -49,7 +57,8 @@ pub fn extract_zip(archive_path: &str, output_dir: &str, password: Option<&str>,
                     code: "INVALID_PATH".to_string(),
                     file: file.name().to_string(),
                     details: "Path is missing or invalid".to_string(),
-                }.send();
+                }
+                .send();
                 continue;
             }
         };
@@ -59,7 +68,8 @@ pub fn extract_zip(archive_path: &str, output_dir: &str, password: Option<&str>,
                 code: "PATH_TRAVERSAL".to_string(),
                 file: filename.display().to_string(),
                 details: "Blocked due to unsafe path traversal".to_string(),
-            }.send();
+            }
+            .send();
             sec_ctx.blocked_files += 1;
             continue;
         }
@@ -69,7 +79,8 @@ pub fn extract_zip(archive_path: &str, output_dir: &str, password: Option<&str>,
                 code: "SYMLINK_IGNORED".to_string(),
                 file: filename.display().to_string(),
                 details: "Symlinks are zero-tolerance dropped for security".to_string(),
-            }.send();
+            }
+            .send();
             sec_ctx.blocked_files += 1;
             continue;
         }
@@ -80,8 +91,12 @@ pub fn extract_zip(archive_path: &str, output_dir: &str, password: Option<&str>,
         if let Err(err_code) = sec_ctx.record_and_check(compressed_size, uncompressed_size) {
             SandboxEvent::Error {
                 code: err_code.to_string(),
-                details: format!("limits exceeded. {} > {}", uncompressed_size, compressed_size),
-            }.send();
+                details: format!(
+                    "limits exceeded. {} > {}",
+                    uncompressed_size, compressed_size
+                ),
+            }
+            .send();
             return Err("Aborted due to security threshold".to_string());
         }
 
@@ -94,15 +109,17 @@ pub fn extract_zip(archive_path: &str, output_dir: &str, password: Option<&str>,
                     fs::create_dir_all(&p).ok();
                 }
             }
-            let mut outfile = File::create(&out_path).map_err(|e| format!("Write failed: {}", e))?;
+            let mut outfile =
+                File::create(&out_path).map_err(|e| format!("Write failed: {}", e))?;
             copy(&mut file, &mut outfile).map_err(|e| format!("Extract failed: {}", e))?;
-            
+
             SandboxEvent::Progress {
                 current: (i + 1) as u32,
                 total: total_files as u32,
                 file: filename.display().to_string(),
                 bytes: uncompressed_size,
-            }.send();
+            }
+            .send();
         }
     }
 
@@ -110,14 +127,21 @@ pub fn extract_zip(archive_path: &str, output_dir: &str, password: Option<&str>,
         files_extracted: sec_ctx.extracted_files,
         files_blocked: sec_ctx.blocked_files,
         total_bytes: sec_ctx.extracted_bytes,
-    }.send();
+    }
+    .send();
 
     Ok(())
 }
 
-pub fn extract_tar(archive_path: &str, output_dir: &str, is_gz: bool, limits: &HostLimit) -> Result<(), String> {
+pub fn extract_tar(
+    archive_path: &str,
+    output_dir: &str,
+    is_gz: bool,
+    limits: &HostLimit,
+) -> Result<(), String> {
     let file = File::open(archive_path).map_err(|e| format!("Failed to open Tar: {}", e))?;
-    let mut sec_ctx = SecurityContext::new(limits.max_ratio, limits.max_total_bytes, limits.max_files);
+    let mut sec_ctx =
+        SecurityContext::new(limits.max_ratio, limits.max_total_bytes, limits.max_files);
     let out_dir = Path::new(output_dir);
 
     // Using Box<dyn Read> to handle both pure tar and tar.gz
@@ -128,12 +152,16 @@ pub fn extract_tar(archive_path: &str, output_dir: &str, is_gz: bool, limits: &H
     };
 
     let mut archive = TarArchive::new(reader);
-    let entries = archive.entries().map_err(|e| format!("Invalid Tar: {}", e))?;
+    let entries = archive
+        .entries()
+        .map_err(|e| format!("Invalid Tar: {}", e))?;
 
     let mut count = 0;
     for entry in entries {
         let mut entry = entry.map_err(|e| format!("Read entry failed: {}", e))?;
-        let entry_path = entry.path().map_err(|e| format!("Invalid path in entry: {}", e))?;
+        let entry_path = entry
+            .path()
+            .map_err(|e| format!("Invalid path in entry: {}", e))?;
         let filename = entry_path.into_owned();
 
         if !SecurityContext::is_safe_path(filename.to_str().unwrap_or("")) {
@@ -141,7 +169,8 @@ pub fn extract_tar(archive_path: &str, output_dir: &str, is_gz: bool, limits: &H
                 code: "PATH_TRAVERSAL".to_string(),
                 file: filename.display().to_string(),
                 details: "Blocked unsafe path".to_string(),
-            }.send();
+            }
+            .send();
             sec_ctx.blocked_files += 1;
             continue;
         }
@@ -154,15 +183,21 @@ pub fn extract_tar(archive_path: &str, output_dir: &str, is_gz: bool, limits: &H
                 code: "SYMLINK_IGNORED".to_string(),
                 file: filename.display().to_string(),
                 details: "Symlinks are prohibited".to_string(),
-            }.send();
+            }
+            .send();
             sec_ctx.blocked_files += 1;
             continue;
         }
 
         let uncompressed_size = entry.header().size().unwrap_or(0);
         // Tar streams don't easily provide compressed size per file, assume 1 for ratio bypass
-        if let Err(err_code) = sec_ctx.record_and_check(uncompressed_size.max(1), uncompressed_size) {
-            SandboxEvent::Error { code: err_code.to_string(), details: "limit exceeded".to_string() }.send();
+        if let Err(err_code) = sec_ctx.record_and_check(uncompressed_size.max(1), uncompressed_size)
+        {
+            SandboxEvent::Error {
+                code: err_code.to_string(),
+                details: "limit exceeded".to_string(),
+            }
+            .send();
             return Err("Aborted due to security threshold".to_string());
         }
 
@@ -176,14 +211,16 @@ pub fn extract_tar(archive_path: &str, output_dir: &str, is_gz: bool, limits: &H
                     fs::create_dir_all(&p).ok();
                 }
             }
-            let mut outfile = File::create(&out_path).map_err(|e| format!("Write failed: {}", e))?;
+            let mut outfile =
+                File::create(&out_path).map_err(|e| format!("Write failed: {}", e))?;
             copy(&mut entry, &mut outfile).map_err(|e| format!("Extract failed: {}", e))?;
             SandboxEvent::Progress {
                 current: count,
                 total: 0, // Tar streams unknown total
                 file: filename.display().to_string(),
                 bytes: uncompressed_size,
-            }.send();
+            }
+            .send();
         }
     }
 
@@ -191,14 +228,21 @@ pub fn extract_tar(archive_path: &str, output_dir: &str, is_gz: bool, limits: &H
         files_extracted: sec_ctx.extracted_files,
         files_blocked: sec_ctx.blocked_files,
         total_bytes: sec_ctx.extracted_bytes,
-    }.send();
+    }
+    .send();
 
     Ok(())
 }
 
-pub fn extract_rar(archive_path: &str, output_dir: &str, password: Option<&str>, limits: &HostLimit) -> Result<(), String> {
+pub fn extract_rar(
+    archive_path: &str,
+    output_dir: &str,
+    password: Option<&str>,
+    limits: &HostLimit,
+) -> Result<(), String> {
     let pwd = password.unwrap_or("");
-    let mut sec_ctx = SecurityContext::new(limits.max_ratio, limits.max_total_bytes, limits.max_files);
+    let mut sec_ctx =
+        SecurityContext::new(limits.max_ratio, limits.max_total_bytes, limits.max_files);
 
     // rar crate expects trailing slash for the output directory
     let out_dir = if output_dir.ends_with('/') {
@@ -212,8 +256,15 @@ pub fn extract_rar(archive_path: &str, output_dir: &str, password: Option<&str>,
         Err(e) => {
             let msg = format!("{:?}", e);
             if msg.contains("Password") || msg.contains("Checksum") {
-                let err_str = format!("Password required or invalid for encrypted archive. Detailed Error: {:?}", e);
-                SandboxEvent::Error { code: "PASSWORD_REQUIRED".to_string(), details: err_str.clone() }.send();
+                let err_str = format!(
+                    "Password required or invalid for encrypted archive. Detailed Error: {:?}",
+                    e
+                );
+                SandboxEvent::Error {
+                    code: "PASSWORD_REQUIRED".to_string(),
+                    details: err_str.clone(),
+                }
+                .send();
                 return Err(err_str);
             }
             return Err(format!("Failed to extract RAR: {:?}", e));
@@ -224,7 +275,7 @@ pub fn extract_rar(archive_path: &str, output_dir: &str, password: Option<&str>,
 
     for (i, file) in archive.files.iter().enumerate() {
         let filename = file.name.clone();
-        
+
         // --- LAYER 1: UNICODE SPOOFING (RTLO) & PATH TRAVERSAL VERIFICATION ---
         // Since `extract_all` already dumped the files into the WASI sandbox,
         // we must ABORT the entire operation if ANY file contains dangerous paths.
@@ -232,7 +283,8 @@ pub fn extract_rar(archive_path: &str, output_dir: &str, password: Option<&str>,
             SandboxEvent::Error {
                 code: "PATH_TRAVERSAL".to_string(),
                 details: format!("Blocked unsafe path or RTLO detected in RAR: {}", filename),
-            }.send();
+            }
+            .send();
             return Err("Aborted due to security boundary violation".to_string());
         }
 
@@ -242,8 +294,12 @@ pub fn extract_rar(archive_path: &str, output_dir: &str, password: Option<&str>,
         if let Err(err_code) = sec_ctx.record_and_check(compressed_size, uncompressed_size) {
             SandboxEvent::Error {
                 code: err_code.to_string(),
-                details: format!("limits exceeded. {} > {}", uncompressed_size, compressed_size),
-            }.send();
+                details: format!(
+                    "limits exceeded. {} > {}",
+                    uncompressed_size, compressed_size
+                ),
+            }
+            .send();
             return Err("Aborted due to security threshold".to_string());
         }
 
@@ -257,21 +313,24 @@ pub fn extract_rar(archive_path: &str, output_dir: &str, password: Option<&str>,
                 let mut hasher = crc32fast::Hasher::new();
                 let mut buf = vec![0u8; 1024 * 8];
                 while let Ok(n) = extracted_file.read(&mut buf) {
-                    if n == 0 { break; }
+                    if n == 0 {
+                        break;
+                    }
                     hasher.update(&buf[..n]);
                 }
                 let checksum = hasher.finalize();
-                
+
                 // RAR format uses CRC, when encryption yields garbage, this will inevitably fail
                 if checksum != file.data_crc {
                     std::fs::remove_file(&out_path).ok(); // Clean up corrupted chunk
-                    
+
                     let err_str = "Password required or invalid for encrypted archive. Data verification failed.".to_string();
-                    SandboxEvent::Error { 
-                        code: "PASSWORD_REQUIRED".to_string(), 
-                        details: err_str.clone()
-                    }.send();
-                    
+                    SandboxEvent::Error {
+                        code: "PASSWORD_REQUIRED".to_string(),
+                        details: err_str.clone(),
+                    }
+                    .send();
+
                     return Err(err_str);
                 }
             }
@@ -282,14 +341,16 @@ pub fn extract_rar(archive_path: &str, output_dir: &str, password: Option<&str>,
             total: total_files,
             file: filename,
             bytes: uncompressed_size,
-        }.send();
+        }
+        .send();
     }
 
     SandboxEvent::Complete {
         files_extracted: sec_ctx.extracted_files,
         files_blocked: sec_ctx.blocked_files,
         total_bytes: sec_ctx.extracted_bytes,
-    }.send();
+    }
+    .send();
 
     Ok(())
 }

@@ -1,11 +1,11 @@
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::{AppHandle, Emitter, Wry};
 
-pub mod sandbox;
-pub mod wasm;
-pub mod security;
-pub mod release;
 pub mod commands;
+pub mod release;
+pub mod sandbox;
+pub mod security;
+pub mod wasm;
 
 pub fn build_menu(app: &AppHandle) -> tauri::Result<Menu<Wry>> {
     let pkg_info = app.package_info();
@@ -34,9 +34,7 @@ pub fn build_menu(app: &AppHandle) -> tauri::Result<Menu<Wry>> {
         app,
         "File",
         true,
-        &[
-            &PredefinedMenuItem::close_window(app, None)?,
-        ],
+        &[&PredefinedMenuItem::close_window(app, None)?],
     )?;
 
     let edit_menu = Submenu::with_items(
@@ -58,11 +56,9 @@ pub fn build_menu(app: &AppHandle) -> tauri::Result<Menu<Wry>> {
         app,
         "View",
         true,
-        &[
-            &PredefinedMenuItem::fullscreen(app, None)?,
-        ],
+        &[&PredefinedMenuItem::fullscreen(app, None)?],
     )?;
-    
+
     let window_menu = Submenu::with_items(
         app,
         "Window",
@@ -75,7 +71,10 @@ pub fn build_menu(app: &AppHandle) -> tauri::Result<Menu<Wry>> {
         ],
     )?;
 
-    let menu = Menu::with_items(app, &[&app_menu, &file_menu, &edit_menu, &view_menu, &window_menu])?;
+    let menu = Menu::with_items(
+        app,
+        &[&app_menu, &file_menu, &edit_menu, &view_menu, &window_menu],
+    )?;
     Ok(menu)
 }
 

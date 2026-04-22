@@ -1,10 +1,9 @@
-
-use wasmtime::*;
-use wasmtime_wasi::preview1::{self, WasiP1Ctx};
-use wasmtime_wasi::pipe::{MemoryInputPipe, MemoryOutputPipe};
-use wasmtime_wasi::{WasiCtxBuilder, DirPerms, FilePerms};
-use tokio::sync::mpsc;
 use crate::sandbox::SandboxEnv;
+use tokio::sync::mpsc;
+use wasmtime::*;
+use wasmtime_wasi::pipe::{MemoryInputPipe, MemoryOutputPipe};
+use wasmtime_wasi::preview1::{self, WasiP1Ctx};
+use wasmtime_wasi::{DirPerms, FilePerms, WasiCtxBuilder};
 
 const WASM_BYTES: &[u8] = include_bytes!("../../target/wasm32-wasip1/release/wasm-sandbox.wasm");
 
@@ -12,7 +11,12 @@ struct MyState {
     wasi: WasiP1Ctx,
 }
 
-pub fn run_wasm_sandbox(env: &SandboxEnv, host_json_cmd: String, archive_size: u64, tx: mpsc::Sender<String>) -> Result<(), String> {
+pub fn run_wasm_sandbox(
+    env: &SandboxEnv,
+    host_json_cmd: String,
+    archive_size: u64,
+    tx: mpsc::Sender<String>,
+) -> Result<(), String> {
     let mut config = Config::new();
     config.consume_fuel(true); // Limit compute usage
 
@@ -21,40 +25,43 @@ pub fn run_wasm_sandbox(env: &SandboxEnv, host_json_cmd: String, archive_size: u
     preview1::add_to_linker_sync(&mut linker, |s: &mut MyState| &mut s.wasi)
         .map_err(|e| format!("WASI Linker error: {}", e))?;
 
-    let module = Module::from_binary(&engine, WASM_BYTES)
-        .map_err(|e| format!("Load Wasm error: {}", e))?;
+    let module =
+        Module::from_binary(&engine, WASM_BYTES).map_err(|e| format!("Load Wasm error: {}", e))?;
 
     let sandbox_path = env.path();
 
     let mut builder = WasiCtxBuilder::new();
-    builder.preopened_dir(sandbox_path, "/sandbox", DirPerms::all(), FilePerms::all())
+    builder
+        .preopened_dir(sandbox_path, "/sandbox", DirPerms::all(), FilePerms::all())
         .map_err(|e| format!("Preopen error: {}", e))?;
-    
+
     let stdin = MemoryInputPipe::new(host_json_cmd.into_bytes());
     // Allocate 250MB buffer to prevent stdout deadlocks when extracting 500k+ files
     let stdout = MemoryOutputPipe::new(250 * 1024 * 1024);
-    
+
     builder.stdin(stdin);
     builder.stdout(stdout.clone());
 
     let wasi_ctx = builder.build_p1();
     let mut store = Store::new(&engine, MyState { wasi: wasi_ctx });
-    
+
     // Base fuel: 5,000,000,000 (~10s) to handle Rust/WASI init and small files.
-    // Dynamic fuel: 50,000 instructions per compressed byte. 
+    // Dynamic fuel: 50,000 instructions per compressed byte.
     // This allows large archives (e.g., 50GB games) enough compute time, while strictly
     // snapping the neck of highly-compressed logic bombs that try to infinite-loop.
     let fuel = 5_000_000_000_u64.saturating_add(archive_size.saturating_mul(50_000));
     let _ = store.set_fuel(fuel);
-    
-    let instance = linker.instantiate(&mut store, &module)
+
+    let instance = linker
+        .instantiate(&mut store, &module)
         .map_err(|e| format!("Instantiate error: {}", e))?;
-    
-    let func = instance.get_typed_func::<(), ()>(&mut store, "_start")
+
+    let func = instance
+        .get_typed_func::<(), ()>(&mut store, "_start")
         .map_err(|e| format!("Find _start error: {}", e))?;
-        
+
     let result = func.call(&mut store, ());
-    
+
     if let Err(e) = result {
         let _ = tx.blocking_send(format!(
             r#"{{"type": "error", "code": "WASM_TRAP", "details": "Execution crashed or ran out of fuel: {}"}}"#, e

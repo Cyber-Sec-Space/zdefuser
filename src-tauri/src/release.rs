@@ -1,5 +1,5 @@
-use std::path::Path;
 use std::fs;
+use std::path::Path;
 use walkdir::WalkDir;
 
 #[cfg(unix)]
@@ -7,7 +7,8 @@ use std::os::unix::fs::PermissionsExt;
 
 pub fn move_and_strip_permissions(source_dir: &Path, target_dir: &Path) -> Result<(), String> {
     if !target_dir.exists() {
-        fs::create_dir_all(target_dir).map_err(|e| format!("Failed to create target dir: {}", e))?;
+        fs::create_dir_all(target_dir)
+            .map_err(|e| format!("Failed to create target dir: {}", e))?;
     }
 
     for entry in WalkDir::new(source_dir).min_depth(1) {
@@ -21,8 +22,9 @@ pub fn move_and_strip_permissions(source_dir: &Path, target_dir: &Path) -> Resul
             if let Some(p) = target_path.parent() {
                 fs::create_dir_all(&p).ok();
             }
-            fs::copy(entry.path(), &target_path).map_err(|e| format!("Copy failed for {}: {}", rel_path.display(), e))?;
-            
+            fs::copy(entry.path(), &target_path)
+                .map_err(|e| format!("Copy failed for {}: {}", rel_path.display(), e))?;
+
             // Strip executable permissions
             let mut perms = fs::metadata(&target_path).unwrap().permissions();
             #[cfg(unix)]
@@ -36,7 +38,7 @@ pub fn move_and_strip_permissions(source_dir: &Path, target_dir: &Path) -> Resul
             }
             #[cfg(not(unix))]
             {
-                // In windows, we can mark read-only if we wanted to restrict execution somewhat, 
+                // In windows, we can mark read-only if we wanted to restrict execution somewhat,
                 // but usually the execute bit is enough on unix.
                 let _ = perms; // Ignore unused
             }

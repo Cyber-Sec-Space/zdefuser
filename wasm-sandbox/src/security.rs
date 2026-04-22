@@ -54,8 +54,12 @@ impl SecurityContext {
         true
     }
 
-    /// Validate against zip bombs and limits 
-    pub fn record_and_check(&mut self, compressed_size: u64, uncompressed_size: u64) -> Result<(), &'static str> {
+    /// Validate against zip bombs and limits
+    pub fn record_and_check(
+        &mut self,
+        compressed_size: u64,
+        uncompressed_size: u64,
+    ) -> Result<(), &'static str> {
         self.extracted_files += 1;
         if self.extracted_files > self.max_files {
             return Err("TOO_MANY_FILES");
