@@ -1,0 +1,27 @@
+[package]
+name = "rar"
+version = "0.4.0"
+authors = ["Robert Schütte <schuetterobert@gmail.com>", "Michael Stowe <michael.stowe@member.mensa.org>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/Roba1993/RAR"
+homepage = "https://github.com/Roba1993/RAR"
+description = """
+Rust native RAR extractor based upon nom
+"""
+edition = "2021"
+exclude = [
+    "assets/*",
+]
+
+[dependencies]
+nom = "7.1"
+thiserror = "2.0"
+lazy_static = "1.5"
+chrono = "0.4"
+aes = "0.8"
+cbc = "0.1"
+pbkdf2 = "0.12"
+hmac = "0.12"
+sha2 = "0.10"
+generic-array = "1.3"
