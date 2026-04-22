@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZDefuser | True Zero-Trust Sandboxed Archive Extraction</title>
+    <meta name="description"
+        content="ZDefuser provides physical-grade isolation for archive extraction on macOS, Linux, and Windows. Leveraging Wasmtime and memory-safe Rust to guarantee 100% protection against zero-day malware.">
+    <meta name="keywords"
+        content="Zero-Trust, Sandboxed Extraction, Anti-Malware, Cybersecurity, Wasmtime, WebAssembly, Rust, ZDefuser">
+
+    <!-- Open Graph for sharing -->
+    <meta property="og:title" content="ZDefuser - Zero-Trust Sandboxed Extraction">
+    <meta property="og:description"
+        content="Physical-grade isolation for potentially dangerous archives. Built with Rust & Wasmtime.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="./assets/sandbox_concept.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Outfit:wght@400;600;800&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body>
+    <div class="background-mesh"></div>
+
+    <header>
+        <div class="container header-container">
+            <div class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#7A82FF" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M2 17L12 22L22 17" stroke="#7A82FF" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M2 12L12 17L22 12" stroke="#7A82FF" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+                <span>ZDefuser</span>
+            </div>
+            <nav>
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="https://github.com/Cyber-Sec-Space/zdefuser" class="btn-outline" target="_blank"
+                    rel="noopener">GitHub</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero fade-in-up">
+            <div class="container hero-content">
+                <div class="hero-text">
+                    <div class="badge">Enterprise-Grade Security</div>
+                    <h1>Unpack With <span class="text-gradient">Zero Trust</span>.</h1>
+                    <p>Stop malicious payloads before they ever touch your operating system. ZDefuser uses absolute
+                        WebAssembly isolation to physically quarantine archive extraction—guaranteeing 100% protection
+                        against zero-day zip bombs, path traversals, and embedded malware.</p>
+                    <div class="hero-actions">
+                        <a href="https://github.com/Cyber-Sec-Space/zdefuser/releases/latest"
+                            class="btn-primary">Download ZDefuser</a>
+                        <a href="#how-it-works" class="btn-secondary">Learn More</a>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="glass-orb"></div>
+                    <img src="./assets/app-screenshot.png" alt="ZDefuser Interface" class="app-mockup shadow-glow">
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Grid -->
+        <section id="features" class="container">
+            <div class="section-header fade-in-up">
+                <h2>8 Attack Vectors. <span class="text-gradient">Zero Impact.</span></h2>
+                <p>Traditional anti-virus relies on knowing the threat. ZDefuser assumes every file is hostile until
+                    proven otherwise.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card glass-panel fade-in-up">
+                    <div class="feature-icon">💥</div>
+                    <h3>Zip Bombs</h3>
+                    <p>Detects and mitigates multi-level decompression bombs by enforcing strict scaling ratios alongside <strong>Dynamic Compute Rationing (Fuel Allocation)</strong>.</p>
+                </div>
+                <div class="feature-card glass-panel fade-in-up">
+                    <div class="feature-icon">📁</div>
+                    <h3>Path Traversal</h3>
+                    <p>Impossible by design. The extraction engine operates within a WASI virtual filesystem. It
+                        physically cannot write to <code>/etc</code> or <code>C:\Windows</code>.</p>
+                </div>
+                <div class="feature-card glass-panel fade-in-up">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>Memory Exploits</h3>
+                    <p>Written entirely in pure Rust. No C/C++ memory vulnerabilities, eliminating buffer overflows and
+                        remote code execution (RCE).</p>
+                </div>
+                <div class="feature-card glass-panel fade-in-up">
+                    <div class="feature-icon">🪟</div>
+                    <h3>Right-to-Left Override</h3>
+                    <p>Sanitizes hostile Unicode filenames (RTLO spoofing), ensuring that what looks like a harmless
+                        <code>.txt</code> file doesn't secretly deploy an <code>.exe</code>.
+                    </p>
+                </div>
+                <div class="feature-card glass-panel fade-in-up">
+                    <div class="feature-icon">🔗</div>
+                    <h3>Symlink Isolation</h3>
+                    <p>Zero tolerance for illegal directory references and symbolic shortcuts, preventing host private keys and config files from stealthy exfiltration.</p>
+                </div>
+                <div class="feature-card glass-panel fade-in-up">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Executable Bit Stripping</h3>
+                    <p>Through the Layer-3 Release Gate, any stealthy <code>+x</code> script permissions implanted by attackers are forcibly stripped, downgrading malicious executables to harmless text.</p>
+                </div>
+                <div class="feature-card glass-panel fade-in-up">
+                    <div class="feature-icon">🗄️</div>
+                    <h3>Encrypted Vectors</h3>
+                    <p>Safely handles AES-encrypted ZIPs and RARs. Even if an archive mandates a password, the
+                        decryption occurs strictly within the quarantine zone.</p>
+                </div>
+                <div class="feature-card glass-panel fade-in-up">
+                    <div class="feature-icon">🕵️</div>
+                    <h3>No Network Leakage</h3>
+                    <p>WASI network sockets are entirely disabled. Extracted spyware cannot ping external
+                        command-and-control servers.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- How it works -->
+        <section id="how-it-works" class="container layout-split">
+            <div class="split-visual fade-in-up">
+                <img src="./assets/sandbox_concept.png" alt="WASM Sandbox Conceptual Art"
+                    class="concept-art shadow-glow">
+            </div>
+            <div class="split-text fade-in-up">
+                <h2>The WebAssembly <span class="text-gradient">Quarantine Zone</span></h2>
+                <p>When you drop a file into ZDefuser, we don't scan it—we detonate it inside a mathematical cage.</p>
+                <ul class="check-list">
+                    <li><strong>Wasmtime Runtime:</strong> Extraction happens in a compiled <code>wasm32-wasip1</code>
+                        bytecode sandbox with zero host access.</li>
+                    <li><strong>WASI Constraints:</strong> The virtual OS is given precisely one temporary read-only
+                        input handle and one write-only output handle.</li>
+                    <li><strong>Dynamic Scheduling:</strong> CPU cycles (Fuel) are dynamically rationed based on original archive size, securely unpacking 50GB files while instantly terminating infinite-loop zero-day logic bombs.</li>
+                    <li><strong>Enterprise Compliance:</strong> Built-in deep license auditing automatically satisfies MIT, Apache, and BSD open-source redistribution requirements out of the box.</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container footer-content glass-panel">
+            <div class="brand">
+                <div class="logo">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#7A82FF" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M2 17L12 22L22 17" stroke="#7A82FF" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                    <span>ZDefuser</span>
+                </div>
+                <p>Absolute extraction security.</p>
+                <p style="margin-top: 12px; font-size: 0.8rem; color: rgba(255, 255, 255, 0.4);">&copy; 2026 Cyber Sec Space. All rights reserved.</p>
+            </div>
+            <div class="footer-links">
+                <a href="https://github.com/Cyber-Sec-Space/zdefuser">Source Code</a>
+                <a href="https://github.com/Cyber-Sec-Space/zdefuser/releases">Releases</a>
+                <a href="https://github.com/Cyber-Sec-Space/zdefuser/issues">Report Issue</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="./script.js"></script>
+</body>
+
+</html>

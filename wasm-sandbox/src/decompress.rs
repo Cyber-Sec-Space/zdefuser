@@ -215,8 +215,19 @@ pub fn extract_rar(archive_path: &str, output_dir: &str, password: Option<&str>,
     for (i, file) in archive.files.iter().enumerate() {
         let filename = file.name.clone();
         
+        // --- LAYER 1: UNICODE SPOOFING (RTLO) & PATH TRAVERSAL VERIFICATION ---
+        // Since `extract_all` already dumped the files into the WASI sandbox,
+        // we must ABORT the entire operation if ANY file contains dangerous paths.
+        if !SecurityContext::is_safe_path(&filename) {
+            SandboxEvent::Error {
+                code: "PATH_TRAVERSAL".to_string(),
+                details: format!("Blocked unsafe path or RTLO detected in RAR: {}", filename),
+            }.send();
+            return Err("Aborted due to security boundary violation".to_string());
+        }
+
         let uncompressed_size = file.unpacked_size as u64;
-        let compressed_size = file.head.pack_size as u64;
+        let compressed_size = file.head.data_area_size as u64;
 
         if let Err(err_code) = sec_ctx.record_and_check(compressed_size, uncompressed_size) {
             SandboxEvent::Error {
@@ -224,6 +235,36 @@ pub fn extract_rar(archive_path: &str, output_dir: &str, password: Option<&str>,
                 details: format!("limits exceeded. {} > {}", uncompressed_size, compressed_size),
             }.send();
             return Err("Aborted due to security threshold".to_string());
+        }
+
+        // --- LAYER 2: PASSWORD/INTEGRITY VERIFICATION ---
+        // Since `rar-rs` blindy decrypts even with bad passwords (garbling the data),
+        // we must enforce validation by comparing the checksum of the resulting stream.
+        if file.unpacked_size > 0 && !file.flags.directory {
+            use std::io::Read;
+            let out_path = std::path::Path::new(&out_dir).join(&filename);
+            if let Ok(mut extracted_file) = std::fs::File::open(&out_path) {
+                let mut hasher = crc32fast::Hasher::new();
+                let mut buf = vec![0u8; 1024 * 8];
+                while let Ok(n) = extracted_file.read(&mut buf) {
+                    if n == 0 { break; }
+                    hasher.update(&buf[..n]);
+                }
+                let checksum = hasher.finalize();
+                
+                // RAR format uses CRC, when encryption yields garbage, this will inevitably fail
+                if checksum != file.data_crc {
+                    std::fs::remove_file(&out_path).ok(); // Clean up corrupted chunk
+                    
+                    let err_str = "Password required or invalid for encrypted archive. Data verification failed.".to_string();
+                    SandboxEvent::Error { 
+                        code: "PASSWORD_REQUIRED".to_string(), 
+                        details: err_str.clone()
+                    }.send();
+                    
+                    return Err(err_str);
+                }
+            }
         }
 
         SandboxEvent::Progress {

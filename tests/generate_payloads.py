@@ -85,6 +85,8 @@ def main():
     create_symlink_attack(payloads_dir)
     create_executable_hijack(payloads_dir)
     create_encrypted_secret(payloads_dir)
+    create_malicious_rtlo_zip(payloads_dir)
+    create_out_of_bounds_rar(payloads_dir)
     
     # Clean up old payloads so they don't confuse the test
     if os.path.exists(os.path.join(payloads_dir, 'path_traversal.tar')):
@@ -96,3 +98,23 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+def create_malicious_rtlo_zip(output_dir):
+    zip_path = os.path.join(output_dir, '06_malicious_rtlo.zip')
+    print(f"Generating {zip_path}...")
+    import zipfile
+    malicious_name = "invoice\u202Excod.exe"
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr(malicious_name, b"MZ\x90\x00\x03\x00\x00\x00\x04\x00\x00\x00\xFF\xFF") # Fake PE header
+
+def create_out_of_bounds_rar(output_dir):
+    rar_path = os.path.join(output_dir, '07_malicious_traversal.rar')
+    print(f"Generating {rar_path}...")
+    
+    import shutil
+    template_rar = os.path.join(output_dir, "encrypted_test.rar")
+    if os.path.exists(template_rar):
+        shutil.copy(template_rar, rar_path)
+        with open(rar_path, "r+b") as f:
+            f.seek(50)  
+            f.write(b"CORRUPTED_BYTES")

@@ -41,6 +41,16 @@ impl SecurityContext {
             return false;
         }
 
+        // --- RTLO and Dangerous Unicode Filtering ---
+        // \u{202E} is Right-to-Left Override, often used to disguise extensions (e.g. txt.exe)
+        // \u{200F} is Right-to-Left Mark
+        // \u{202A} to \u{202F} are mostly bidirectional formatting codes
+        for c in filepath.chars() {
+            if c == '\u{202E}' || c == '\u{200F}' || (c >= '\u{202A}' && c <= '\u{202F}') {
+                return false; // Dangerous spoofing attempt
+            }
+        }
+
         true
     }
 

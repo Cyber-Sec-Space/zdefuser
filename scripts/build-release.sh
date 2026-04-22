@@ -15,6 +15,10 @@ echo "============================================="
 echo "🛡 ZDefuser: Multi-Platform Release Builder "
 echo "============================================="
 
+# 0. Generate Third-Party Notices
+echo "📝 [0/4] Generating Third-Party Notices (Legal Compliance)..."
+python3 scripts/generate_licenses.py
+
 # 1. Build WASM Sandbox securely
 echo "📦 [1/4] Building WASM Sandbox (wasm32-wasip1)..."
 cd wasm-sandbox

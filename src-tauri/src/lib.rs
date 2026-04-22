@@ -1,5 +1,5 @@
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
-use tauri::{AppHandle, Manager, Emitter, Wry};
+use tauri::{AppHandle, Emitter, Wry};
 
 pub mod sandbox;
 pub mod wasm;

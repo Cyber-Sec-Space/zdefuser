@@ -12,7 +12,7 @@ struct MyState {
     wasi: WasiP1Ctx,
 }
 
-pub fn run_wasm_sandbox(env: &SandboxEnv, host_json_cmd: String, tx: mpsc::Sender<String>) -> Result<(), String> {
+pub fn run_wasm_sandbox(env: &SandboxEnv, host_json_cmd: String, archive_size: u64, tx: mpsc::Sender<String>) -> Result<(), String> {
     let mut config = Config::new();
     config.consume_fuel(true); // Limit compute usage
 
@@ -39,8 +39,12 @@ pub fn run_wasm_sandbox(env: &SandboxEnv, host_json_cmd: String, tx: mpsc::Sende
     let wasi_ctx = builder.build_p1();
     let mut store = Store::new(&engine, MyState { wasi: wasi_ctx });
     
-    // Set 10_000_000_000 units of fuel ~ equivalent to roughly 10s of heavy computation depending on clock.
-    let _ = store.set_fuel(5_000_000_000);
+    // Base fuel: 5,000,000,000 (~10s) to handle Rust/WASI init and small files.
+    // Dynamic fuel: 50,000 instructions per compressed byte. 
+    // This allows large archives (e.g., 50GB games) enough compute time, while strictly
+    // snapping the neck of highly-compressed logic bombs that try to infinite-loop.
+    let fuel = 5_000_000_000_u64.saturating_add(archive_size.saturating_mul(50_000));
+    let _ = store.set_fuel(fuel);
     
     let instance = linker.instantiate(&mut store, &module)
         .map_err(|e| format!("Instantiate error: {}", e))?;
@@ -67,4 +71,4 @@ pub fn run_wasm_sandbox(env: &SandboxEnv, host_json_cmd: String, tx: mpsc::Sende
 
     Ok(())
 }
-// Force host rebuild after updating Wasm payload
+// Force host rebuild after updating Wasm payload!

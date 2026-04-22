@@ -2,7 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
-## [main] - 2026-04-21
+## [main] - 2026-04-22
+
+### Added
+- **Dynamic Compute Rationing (Fuel)**: Implemented an intelligent Wasmtime fuel allocation engine that scales dynamically with compressed archive size. Safely supports massive (e.g., 50GB) legitimate archives while instantly terminating highly-compressed zero-day logic bombs.
+- **RAR RTLO/Unicode Validation Hook**: Added the missing `SecurityContext::is_safe_path` check to the RAR extraction pipeline, successfully clamping down on Unicode Right-to-Left Override spoofing payloads inside `.rar` containers.
+- **Enterprise Compliance Section**: Synchronized physical `docs/index.html` and `README.md` to officially declare ZDefuser's Third-Party Notices automated generation schema for MIT/Apache/BSD enterprise adoption.
+
+### Changed
+- **Zero-Trust Backend State Strictness**: Patched a critical execution race condition in `src-tauri/src/commands.rs`. The Tauri command now strictly listens for Wasm crash/trap results and immediately aborts the internal React state. This mathematically prevents any partially-extracted malicious payloads from bypassing Layer 2 bounds restrictions.
+- **Unified Attack Vector Documentation**: Audited and upgraded documentation across all channels from 6 to 8 Advanced Threat Vectors, capturing AES Decryption capabilities and precise Execution Target restrictions.
+
+## [1.0.0-rc.1] - 2026-04-21
 
 ### Added
 - **RAR Archive Support**: Fully integrated native WebAssembly isolation support for `.rar` files by vendoring and patching a pure-Rust `rar` crate.

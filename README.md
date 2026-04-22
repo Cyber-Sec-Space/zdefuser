@@ -1,7 +1,7 @@
 # 🛡 ZDefuser
 
-> Zero-Trust Sandboxed Extraction for macOS & Windows.  
-> 專屬工程師與資安研究員的終極物理隔離解壓縮防護傘。
+> Zero-Trust Sandboxed Extraction for macOS, Linux, & Windows.  
+> 專屬工程師與資安研究員的跨平台終極物理隔離解壓縮防護傘。
 
 ---
 
@@ -13,23 +13,48 @@
 
 <h2 id="english">English</h2>
 
-**ZDefuser** is a highly secure archive extraction tool built for engineers and security researchers. By combining unidirectional WebAssembly (Wasm) isolation technology with the native OS interface, it analyzes and extracts `.zip`, `.rar`, and `.tar` files of unknown origins within a "purely physically isolated" sandbox. This effectively blocks malicious payloads from penetrating or damaging the host system during the exact moment of decompression.
+**ZDefuser** is a highly secure archive extraction tool built for engineers and security researchers. By combining unidirectional WebAssembly (Wasm) isolation technology with the native OS interface, it analyzes and extracts `.zip`, `.rar`, `.tar`, and `.tar.gz / .tgz` files of unknown origins within a "purely physically isolated" sandbox. This effectively blocks malicious payloads from penetrating or damaging the host system during the exact moment of decompression.
 
 ### Why ZDefuser?
-Traditional OS archiving tools run with full native file permissions, providing hackers a perfect window for exploitation. ZDefuser drops the payload into a WebAssembly sandbox—completely cut off from networking and native OS calls. This "sterile extraction" guarantees immunity against the **6 classic compression attack vectors**:
+Traditional OS archiving tools run with full native file permissions, providing hackers a perfect window for exploitation. ZDefuser drops the payload into a WebAssembly sandbox—completely cut off from networking and native OS calls. This "sterile extraction" guarantees immunity against **8 advanced threat vectors**:
 
-1. 💣 **Zip Bomb Defusion**: Enforces strict resource ratios (max 100x inflation / 100GB limits) to completely intercept memory exhaustion attacks.
+1. 💣 **Zip Bomb & CPU DoS Defusion**: Enforces strict resource ratios (max 100x inflation / 100GB limits) and integrates **Dynamic Compute Rationing (Dynamic Fuel)** to intercept both volumetric memory exhaustion attacks and infinite-loop mathematical bombs.
 2. 🚫 **Path Traversal Blocking**: Drops any hazardous relative paths like `../../etc/passwd` attempting to escape the sandbox and overwrite the system.
-3. 🌀 **Resource Exhaustion/Infinite Loops (CPU DoS)**: Integrates Wasmtime's `Fuel` (instruction quota) limit to forcibly interrupt mathematical algorithm loops that attempt to stall the CPU.
-4. 🔗 **Symlink Attack Isolation**: Zero tolerance for illegal directory references and symbolic shortcuts, protecting host private keys and config files from stealthy exfiltration.
-5. 🛡 **RCE / Buffer Overflow Immunity**: Even if the internal extraction engine suffers a buffer overflow, it will only trigger a Wasm linear memory trap crash. It is physically impossible to penetrate the host.
-6. 🔒 **Executable Bit Stripping**: Through the Layer-3 Release Gate, any stealthy `+x` script permissions implanted by attackers are forcibly stripped, downgrading malicious executables to harmless text chunks.
+3. 🔗 **Symlink Attack Isolation**: Zero tolerance for illegal directory references and symbolic shortcuts, protecting host private keys and config files from stealthy exfiltration.
+4. 🛡 **RCE / Buffer Overflow Immunity**: Even if the internal extraction engine suffers a buffer overflow, it will only trigger a Wasm linear memory trap crash. It is physically impossible to penetrate the host.
+5. 🪟 **Unicode Spoofing (RTLO) Protection**: Sanitizes malicious Right-to-Left Override sequences inside paths, ensuring stealthy `invoice[RTLO]xcod.exe` files cannot be masqueraded as harmless `.docx` files.
+6. 🔒 **Executable Bit Stripping (Unix Only)**: Through the Layer-3 Release Gate, any stealthy `+x` script permissions implanted by attackers are forcibly stripped, downgrading malicious executables to harmless text chunks.
+7. 🗄️ **Encrypted Vector Neutralization**: Safely handles AES-encrypted ZIPs and RARs. Even if an archive mandates a password and harbors malware, the decryption process and structural validation occur strictly within the quarantine zone.
+8. 🕵️ **Network Leakage Prevention**: WASI network sockets are entirely disabled. Extracted spyware physically cannot ping external command-and-control servers or exfiltrate data.
+
+### Zero-Trust Architecture Flow
+```mermaid
+graph TD;
+    A[User Drops Archive] --> B(Tauri Backend: Commands Layer);
+    B --> C{WASI Sandbox Execution};
+    
+    C -->|Extracts in Memory| D[Decompression Engine];
+    D --> E{Security Context Verification};
+    
+    E -->|Zip Bomb / 100GB Bypass| F[Trap: Wasm Crash];
+    E -->|RTLO / Symlink| F[Trap: Wasm Crash];
+    E -->|Clean Output| G[Sandbox Output Directory];
+    
+    F -->|Strict Error Validation| H[Abort & Destroy Env];
+    G --> I{Layer 2 Integrity Check};
+    
+    I -->|Fails Global Limits| H;
+    I -->|Success| J[Stage for Release];
+```
 
 ### Tech Stack
 * **Host**: [Tauri v2](https://v2.tauri.app/) (Rust)
 * **Isolated Virtual Machine (Sandbox)**: [Wasmtime v29](https://wasmtime.dev/) (`wasm32-wasip1`)
 * **Frontend UI**: React + TypeScript + Vite + Vanilla CSS (Dark minimal aesthetics)
 * **Inter-process Communication**: Async Tokio MPSC Channels
+
+### 📜 Enterprise Legal Compliance
+ZDefuser is architected for Enterprise and Commercial distribution. It features an automated Third-Party License orchestration pipeline (`generate_licenses.py`) integrated into the build process. All MIT, Apache, and BSD dependencies are automatically audited and injected into the in-app "About & Legal" compliance interface, ensuring **100% copyright and licensing compliance** out of the box.
 
 ### Development & Build Instructions
 Ensure you have the Node.js and Rust toolchains (including the `wasm32-wasip1` target) installed.
@@ -50,6 +75,7 @@ cd ..
 # 4. Kickstart developer mode
 npm run tauri dev
 ```
+> **⚠️ Developer Note:** `npm run tauri dev` automatically recompiles the Rust host (`ZDefuser`), but it does **not** track or auto-compile the inner Wasm binary. If you modify any code inside `/wasm-sandbox`, you must manually re-run `cargo build --target wasm32-wasip1 --release` and touch `wasm.rs` before the host registers the sandbox changes!
 
 ### Security Penetration Testing
 Included with built-in realistic penetration verification payloads.  
@@ -61,23 +87,48 @@ You can run the script `python3 tests/generate_payloads.py` to generate authenti
 
 <h2 id="繁體中文">繁體中文</h2>
 
-**ZDefuser** 是一個為工程師與資安研究員打造的極致安全解壓縮工具。透過整合 WebAssembly (Wasm) 單向隔離技術與原生作業系統介面，它能在「純物理隔離」的虛擬沙箱內剖析未知來源的 `.zip`、`.rar` 與 `.tar` 檔案，有效阻斷惡意程式在解壓縮瞬間造成的系統滲透與破壞。
+**ZDefuser** 是一個為工程師與資安研究員打造的極致安全解壓縮工具。透過整合 WebAssembly (Wasm) 單向隔離技術與原生作業系統介面，它能在「純物理隔離」的虛擬沙箱內剖析未知來源的 `.zip`、`.rar`、`.tar` 甚至 `.tar.gz / .tgz` 檔案，有效阻斷惡意程式在解壓縮瞬間造成的系統滲透與破壞。
 
 ### 為什麼需要 ZDefuser？
-傳統的作業系統解壓工具具備過高的原生檔案權限，這讓駭客有機可乘。ZDefuser 將檔案丟進無實體網路、無作業系統呼叫權限的 WebAssembly 沙箱中進行「無菌抽取」，徹底免疫以下**六大傳統解壓縮攻擊向量**：
+傳統的作業系統解壓工具具備過高的原生檔案權限，這讓駭客有機可乘。ZDefuser 將檔案丟進無實體網路、無作業系統呼叫權限的 WebAssembly 沙箱中進行「無菌抽取」，徹底免疫以下**八大進階解壓縮威脅向量**：
 
-1. 💣 **解壓炸彈 (Zip Bomb) 攔截**：採用硬性資源比例上限 (最高防護達 `100 倍膨脹 / 100 GB`) 阻斷記憶體溢出攻擊。
+1. 💣 **解壓炸彈與 CPU 劫持防殺 (Zip Bomb & CPU DoS)**：雙效合一。採用硬性資源比例上限 (最高 100 倍膨脹) 防禦記憶體溢出，並搭配 **動態算力配給制 (Dynamic Compute Rationing)** 依據檔案大小發放精準的 Wasmtime 運算燃料指令配額，幾秒內自動絞殺無窮迴圈型邏輯炸彈。
 2. 🚫 **目錄穿越 (Path Traversal)**：攔截所有 `../../etc/passwd` 等企圖跳脫沙箱覆寫系統檔案的危險路徑。
-3. 🌀 **資源耗盡/死迴圈 (CPU DoS)**：內建 Wasmtime `Fuel` (執行指令配額) 極限，強制中斷企圖卡死 CPU 的惡意壓縮演算法。
-4. 🔗 **符號連結 (Symlink) 隔離**：對非法目錄參照與符號捷徑做到零容忍丟棄，防護私鑰與配置檔遭竊。
-5. 🛡 **任意代碼執行 (RCE/Buffer Overflow) 免疫**：解壓引擎就算發生緩衝區溢位，也只會導致 Wasm 線性記憶體 (Linear Memory) 陷阱崩潰，不可能滲透宿主機。
-6. 🔒 **剝除可執行權限 (Executable Bit Retention)**：經過 Layer 3 釋放閘道 (Release Gate)，駭客植入的隱形 `+x` 可執行權限會被強制扒除，將執行檔降級為無害純文字。
+3. 🔗 **符號連結 (Symlink) 隔離**：對非法目錄參照與符號捷徑做到零容忍丟棄，防護主機私鑰與配置檔遭到無痕竊取。
+4. 🛡 **任意代碼執行 (RCE/Buffer Overflow) 免疫**：就算底層解壓涵式庫發生緩衝區溢位，也只會導致 Wasm 線性記憶體陷阱崩潰，物理上絕對無法滲透宿主機。
+5. 🪟 **Unicode 視覺詐騙 (RTLO) 防護**：過濾掉在檔名中安插的 U+202E 逆向反轉字元，讓偽裝成 `.docx` 的惡意可執行檔原形畢露並強行拋棄。
+6. 🔒 **剝除可執行權限 (Executable Bit Retention - 限 Unix 系統)**：經過 Layer 3 釋放閘道 (Release Gate)，駭客植入的隱形 `+x` 可執行權限會被強制扒除，將腳本檔案降級為無害純文字。
+7. 🗄️ **加密向量中和 (Encrypted Vector Neutralization)**：完美安全處理附加密碼的 AES ZIP 與 RAR。即使解壓縮過程包含惡意負載或偽造的校驗碼，所有的解密運算與演算法審核皆強制關押在無菌隔離區內進行。
+8. 🕵️ **網路外洩阻隔 (No Network Leakage)**：徹底閹割 WASI 的網路通訊協定，從根源確保被解壓縮的間諜軟體絕對無法連回外部指令與控制 (C2) 伺服器傳送資料。
+
+### 零信任沙箱隔離架構 (Zero-Trust Data Flow)
+```mermaid
+graph TD;
+    A[使用者拖曳壓縮包] --> B(Tauri 後端：指令層);
+    B --> C{WASI 沙箱執行環境};
+    
+    C -->|記憶體解壓縮| D[解壓引擎];
+    D --> E{安全上下文審核};
+    
+    E -->|發現 Zip 炸彈| F[觸發 Wasm 崩潰陷阱];
+    E -->|發現 RTLO/目錄穿越| F[觸發 Wasm 崩潰陷阱];
+    E -->|檢查通過| G[沙箱虛擬輸出區];
+    
+    F -->|嚴格錯誤結算| H[強行中斷並銷毀環境];
+    G --> I{Layer 2 總體積稽核};
+    
+    I -->|超過 2GB 上限| H;
+    I -->|合規| J[轉入待命區等待釋放];
+```
 
 ### 核心技術棧 (Tech Stack)
 * **宿主架構 (Host)**: [Tauri v2](https://v2.tauri.app/) (Rust)
 * **隔離虛擬機 (Sandbox)**: [Wasmtime v29](https://wasmtime.dev/) (`wasm32-wasip1`)
 * **使用者介面 (Frontend)**: React + TypeScript + Vite + Vanilla CSS (極黑幾何美學)
 * **通訊層**: 異步 Tokio 管道 (Async MPSC Channels)
+
+### 📜 企業級合規性 (Enterprise Compliance)
+ZDefuser 專為企業採購與商業軟體市場打造。專案內建了全自動化的第三方開源條款稽核系統 (`generate_licenses.py`)，能在編譯打包階段自動統整所有 Rust/NPM 相依套件，並將其注入至應用程式內的「About & Legal」視窗中，**100% 滿足 MIT / Apache / BSD 的最終開源分發合規要求**。
 
 ### 如何安裝與建置 (Development)
 首先確保您已安裝了 Node.js 與 Rust 工具鏈（含 `wasm32-wasip1` target）。
@@ -98,6 +149,7 @@ cd ..
 # 4. 啟動開發者模式
 npm run tauri dev
 ```
+> **⚠️ 開發者注意事項：** `npm run tauri dev` 雖然會自動熱重載 Rust 宿主端 (`ZDefuser`)，但它**無法自動偵測並重新編譯**深層的 Wasm 沙箱引擎。若您修改了 `/wasm-sandbox` 內的任何程式碼，必須手動重新執行 `cargo build --target wasm32-wasip1 --release` 並存檔觸發宿主重載，變更才會生效！
 
 ### 測試驅動 (Security Payloads)
 內建真實駭客測試包 (Penetration Verification Payloads)：  

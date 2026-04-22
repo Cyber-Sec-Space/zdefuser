@@ -35,15 +35,30 @@ pub async fn analyze_archive(app: AppHandle, state: tauri::State<'_, SandboxStat
     // Run wasm execution in a blocking thread to not block async runtime
     let env_thread = env.clone();
     
-    let _ = tokio::task::spawn_blocking(move || {
-        let _ = run_wasm_sandbox(&env_thread, cmd, tx);
+    let archive_size = std::fs::metadata(&archive_path)
+        .map(|m| m.len())
+        .unwrap_or(0);
+
+    let handle = tokio::task::spawn_blocking(move || {
+        run_wasm_sandbox(&env_thread, cmd, archive_size, tx)
     });
 
+    let mut had_error = false;
     // Listen to wasm messages and forward them to frontend
     while let Some(msg) = rx.recv().await {
         if let Ok(json_val) = serde_json::from_str::<serde_json::Value>(&msg) {
+            if json_val.get("type").and_then(|t| t.as_str()) == Some("error") {
+                had_error = true;
+            }
             app.emit("sandbox_event", json_val).unwrap_or(());
         }
+    }
+
+    let wasm_result = handle.await.map_err(|e| format!("Task panicked: {}", e))?;
+    
+    // LAYER 1: If Wasm Sandbox failed (RTLO, Fuel Limit, Zip Bomb ratio), DO NOT PROCEED.
+    if had_error || wasm_result.is_err() {
+        return Err("Sandbox analysis failed due to a security violation or extraction error.".to_string());
     }
 
     // Now Layer 2 check
