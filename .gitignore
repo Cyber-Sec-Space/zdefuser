@@ -7,23 +7,50 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Dependencies
+node_modules/
+dist/
+dist-ssr/
+release-artifacts/
+
+# Rust / Cargo
 target/
 src-tauri/target/
 wasm-sandbox/target/
+**/*.rs.bk
+
+# Env Files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Jest / Coverage
 coverage/
-release-artifacts/
+.coverage
+.nyc_output/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
