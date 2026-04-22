@@ -114,7 +114,7 @@
                 </div>
                 <div class="feature-card glass-panel fade-in-up">
                     <div class="feature-icon">🔒</div>
-                    <h3>Executable Bit Stripping</h3>
+                    <h3>Executable Bit Stripping (Unix Only)</h3>
                     <p>Through the Layer-3 Release Gate, any stealthy <code>+x</code> script permissions implanted by attackers are forcibly stripped, downgrading malicious executables to harmless text.</p>
                 </div>
                 <div class="feature-card glass-panel fade-in-up">
@@ -144,8 +144,7 @@
                 <ul class="check-list">
                     <li><strong>Wasmtime Runtime:</strong> Extraction happens in a compiled <code>wasm32-wasip1</code>
                         bytecode sandbox with zero host access.</li>
-                    <li><strong>WASI Constraints:</strong> The virtual OS is given precisely one temporary read-only
-                        input handle and one write-only output handle.</li>
+                    <li><strong>WASI Constraints:</strong> The virtual OS is jailed to precisely one isolated `preopened_dir` (`/sandbox`) which exclusively contains the target archive and extraction destination, locking out all host directories.</li>
                     <li><strong>Dynamic Scheduling:</strong> CPU cycles (Fuel) are dynamically rationed based on original archive size, securely unpacking 50GB files while instantly terminating infinite-loop zero-day logic bombs.</li>
                     <li><strong>Enterprise Compliance:</strong> Built-in deep license auditing automatically satisfies MIT, Apache, and BSD open-source redistribution requirements out of the box.</li>
                 </ul>
