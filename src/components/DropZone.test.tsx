@@ -4,6 +4,13 @@ import { DropZone } from './DropZone';
 import { open } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
 
+import React, { useState } from 'react';
+
+const TestDropZone = (props: any) => {
+  const [pwd, setPwd] = useState("");
+  return <DropZone {...props} password={pwd} setPassword={setPwd} />;
+};
+
 describe('DropZone Component', () => {
   const mockOnAnalyzeStarted = jest.fn();
 
@@ -12,12 +19,12 @@ describe('DropZone Component', () => {
   });
 
   it('renders correctly', () => {
-    render(<DropZone onAnalyzeStarted={mockOnAnalyzeStarted} />);
+    render(<TestDropZone onAnalyzeStarted={mockOnAnalyzeStarted} />);
     expect(screen.getByText('Select Archive to Extract')).toBeInTheDocument();
   });
 
   it('handles drag over and drag leave correctly', () => {
-    const { container } = render(<DropZone onAnalyzeStarted={mockOnAnalyzeStarted} />);
+    const { container } = render(<TestDropZone onAnalyzeStarted={mockOnAnalyzeStarted} />);
     
     const dropZone = container.firstChild as HTMLElement;
     
@@ -35,7 +42,7 @@ describe('DropZone Component', () => {
     (open as jest.Mock).mockResolvedValue('/fake/path/test.zip');
     (invoke as jest.Mock).mockResolvedValue(true);
     
-    const { container } = render(<DropZone onAnalyzeStarted={mockOnAnalyzeStarted} />);
+    const { container } = render(<TestDropZone onAnalyzeStarted={mockOnAnalyzeStarted} />);
     const dropZone = container.firstChild as HTMLElement;
     fireEvent.click(dropZone);
     
@@ -52,7 +59,7 @@ describe('DropZone Component', () => {
     (open as jest.Mock).mockResolvedValue('/fake/path/test.zip');
     (invoke as jest.Mock).mockResolvedValue(true);
     
-    const { container } = render(<DropZone onAnalyzeStarted={mockOnAnalyzeStarted} />);
+    const { container } = render(<TestDropZone onAnalyzeStarted={mockOnAnalyzeStarted} />);
     
     // Type password
     const pwdInput = screen.getByPlaceholderText('Archive password (optional)');
@@ -77,7 +84,7 @@ describe('DropZone Component', () => {
 
   it('handles invalid file extension', async () => {
     (open as jest.Mock).mockResolvedValue('/fake/path/test.txt');
-    const { container } = render(<DropZone onAnalyzeStarted={mockOnAnalyzeStarted} />);
+    const { container } = render(<TestDropZone onAnalyzeStarted={mockOnAnalyzeStarted} />);
     const dropZone = container.firstChild as HTMLElement;
     fireEvent.click(dropZone);
     
@@ -94,7 +101,7 @@ describe('DropZone Component', () => {
     (open as jest.Mock).mockResolvedValue('/fake/path/test.zip');
     (invoke as jest.Mock).mockRejectedValue('Backend error');
     
-    const { container } = render(<DropZone onAnalyzeStarted={mockOnAnalyzeStarted} />);
+    const { container } = render(<TestDropZone onAnalyzeStarted={mockOnAnalyzeStarted} />);
     const dropZone = container.firstChild as HTMLElement;
     fireEvent.click(dropZone);
     
@@ -108,7 +115,7 @@ describe('DropZone Component', () => {
   it('handles dialog rejection', async () => {
     console.error = jest.fn();
     (open as jest.Mock).mockRejectedValue('Dialog canceled');
-    const { container } = render(<DropZone onAnalyzeStarted={mockOnAnalyzeStarted} />);
+    const { container } = render(<TestDropZone onAnalyzeStarted={mockOnAnalyzeStarted} />);
     const dropZone = container.firstChild as HTMLElement;
     fireEvent.click(dropZone);
     await act(async () => {
@@ -119,7 +126,7 @@ describe('DropZone Component', () => {
 
   it('handles dialog resolving to null (user cancelled)', async () => {
     (open as jest.Mock).mockResolvedValue(null);
-    const { container } = render(<DropZone onAnalyzeStarted={mockOnAnalyzeStarted} />);
+    const { container } = render(<TestDropZone onAnalyzeStarted={mockOnAnalyzeStarted} />);
     const dropZone = container.firstChild as HTMLElement;
     fireEvent.click(dropZone);
     await act(async () => {
