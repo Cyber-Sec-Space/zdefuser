@@ -9,8 +9,8 @@ This software is based in part on the work of the following open source projects
 
 --- RUST (BACKEND) DEPENDENCIES ---
 
-Crate: ZDefuser v1.0.1
-License: None
+Crate: ZDefuser v1.0.2
+License: AGPL-3.0-or-later
 Repository: None
 ----------------------------------------
 
@@ -2649,8 +2649,8 @@ License: Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT
 Repository: https://github.com/bytecodealliance/wasm-tools/tree/main/crates/wasm-metadata
 ----------------------------------------
 
-Crate: wasm-sandbox v1.0.1
-License: None
+Crate: wasm-sandbox v1.0.2
+License: AGPL-3.0-or-later
 Repository: None
 ----------------------------------------
 
@@ -3294,8 +3294,8 @@ License: MIT
 Repository: https://github.com/z-galaxy/zbus/
 ----------------------------------------
 
-Crate: ZDefuser v1.0.1 (WASM Sandbox)
-License: None
+Crate: ZDefuser v1.0.2 (WASM Sandbox)
+License: AGPL-3.0-or-later
 Repository: None
 ----------------------------------------
 
@@ -5934,8 +5934,8 @@ License: Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT
 Repository: https://github.com/bytecodealliance/wasm-tools/tree/main/crates/wasm-metadata
 ----------------------------------------
 
-Crate: wasm-sandbox v1.0.1 (WASM Sandbox)
-License: None
+Crate: wasm-sandbox v1.0.2 (WASM Sandbox)
+License: AGPL-3.0-or-later
 Repository: None
 ----------------------------------------
 
