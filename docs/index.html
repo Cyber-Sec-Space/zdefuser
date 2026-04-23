@@ -8,7 +8,7 @@
     <meta name="description"
         content="ZDefuser provides physical-grade isolation for archive extraction on macOS, Linux, and Windows. Leveraging Wasmtime and memory-safe Rust to guarantee 100% protection against zero-day malware.">
     <meta name="keywords"
-        content="Zero-Trust, Sandboxed Extraction, Secure Unzip, Archive Extractor, Zip Sandbox, Decompression, Ransomware Protection, Malware Isolation, Anti-Malware, Cybersecurity, Wasmtime, WebAssembly, Rust, ZDefuser">
+        content="Zero-Trust, Sandboxed Extraction, Secure Unzip, Archive Extractor, Zip Sandbox, Decompression, Ransomware Protection, Malware Isolation, Anti-Malware, Cybersecurity, Wasmtime, WebAssembly, Rust, ZDefuser, zip, unzip, rar, tar, compress, decompress, malware, ransomware, zero-day, sandbox, isolation, security, privacy, open source, free, macos, linux, windows, winrar, winzip, extractor">
 
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -26,7 +26,8 @@
     <!-- Twitter Cards -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="ZDefuser - Zero-Trust Sandboxed Extraction">
-    <meta name="twitter:description" content="Physical-grade isolation for potentially dangerous archives stopping zero-day malware.">
+    <meta name="twitter:description"
+        content="Physical-grade isolation for potentially dangerous archives stopping zero-day malware.">
     <meta name="twitter:image" content="https://zdefuser.cyber-sec.space/assets/sandbox_concept.png">
 
     <!-- Additional SEO & UX Meta Tags -->
@@ -68,10 +69,14 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Outfit:wght@400;600;800&display=swap">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Outfit:wght@400;600;800&display=swap" media="print" onload="this.media='all'">
+    <link rel="preload" as="style"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Outfit:wght@400;600;800&display=swap">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Outfit:wght@400;600;800&display=swap"
+        media="print" onload="this.media='all'">
     <noscript>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Outfit:wght@400;600;800&display=swap">
+        <link rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Outfit:wght@400;600;800&display=swap">
     </noscript>
 
     <!-- Async Stylesheets -->
@@ -85,7 +90,8 @@
     <header>
         <div class="container header-container">
             <div class="logo">
-                <img src="apple-touch-icon.png" alt="ZDefuser Logo" width="28" height="28" style="background-color: transparent;">
+                <img src="apple-touch-icon.png" alt="ZDefuser Logo" width="28" height="28"
+                    style="background-color: transparent;">
                 <span>Defuser</span>
             </div>
             <nav>
@@ -109,14 +115,14 @@
                         WebAssembly isolation to physically quarantine archive extraction—guaranteeing 100% protection
                         against zero-day zip bombs, path traversals, and embedded malware.</p>
                     <div class="hero-actions">
-                        <a href="#installation"
-                            class="btn-primary">Download ZDefuser</a>
+                        <a href="#installation" class="btn-primary">Download ZDefuser</a>
                         <a href="#how-it-works" class="btn-secondary">Learn More</a>
                     </div>
                 </div>
                 <div class="hero-visual">
                     <div class="glass-orb"></div>
-                    <img src="./assets/app-screenshot.png" alt="ZDefuser Interface" class="app-mockup shadow-glow" width="1600" height="1200" fetchpriority="high" decoding="async">
+                    <img src="./assets/app-screenshot.png" alt="ZDefuser Interface" class="app-mockup shadow-glow"
+                        width="1600" height="1200" fetchpriority="high" decoding="async">
                 </div>
             </div>
         </section>
@@ -132,7 +138,8 @@
                 <div class="feature-card glass-panel fade-in-up">
                     <div class="feature-icon">💥</div>
                     <h3>Zip Bombs</h3>
-                    <p>Detects and mitigates multi-level decompression bombs by enforcing strict scaling ratios alongside <strong>Dynamic Compute Rationing (Fuel Allocation)</strong>.</p>
+                    <p>Detects and mitigates multi-level decompression bombs by enforcing strict scaling ratios
+                        alongside <strong>Dynamic Compute Rationing (Fuel Allocation)</strong>.</p>
                 </div>
                 <div class="feature-card glass-panel fade-in-up">
                     <div class="feature-icon">📁</div>
@@ -156,12 +163,14 @@
                 <div class="feature-card glass-panel fade-in-up">
                     <div class="feature-icon">🔗</div>
                     <h3>Symlink Isolation</h3>
-                    <p>Zero tolerance for illegal directory references and symbolic shortcuts, preventing host private keys and config files from stealthy exfiltration.</p>
+                    <p>Zero tolerance for illegal directory references and symbolic shortcuts, preventing host private
+                        keys and config files from stealthy exfiltration.</p>
                 </div>
                 <div class="feature-card glass-panel fade-in-up">
                     <div class="feature-icon">🔒</div>
                     <h3>Executable Bit Stripping (Unix Only)</h3>
-                    <p>Through the Layer-3 Release Gate, any stealthy <code>+x</code> script permissions implanted by attackers are forcibly stripped, downgrading malicious executables to harmless text.</p>
+                    <p>Through the Layer-3 Release Gate, any stealthy <code>+x</code> script permissions implanted by
+                        attackers are forcibly stripped, downgrading malicious executables to harmless text.</p>
                 </div>
                 <div class="feature-card glass-panel fade-in-up">
                     <div class="feature-icon">🗄️</div>
@@ -190,9 +199,14 @@
                 <ul class="check-list">
                     <li><strong>Wasmtime Runtime:</strong> Extraction happens in a compiled <code>wasm32-wasip1</code>
                         bytecode sandbox with zero host access.</li>
-                    <li><strong>WASI Constraints:</strong> The virtual OS is jailed to precisely one isolated `preopened_dir` (`/sandbox`) which exclusively contains the target archive and extraction destination, locking out all host directories.</li>
-                    <li><strong>Dynamic Scheduling:</strong> CPU cycles (Fuel) are dynamically rationed based on original archive size, securely unpacking 50GB files while instantly terminating infinite-loop zero-day logic bombs.</li>
-                    <li><strong>Enterprise Compliance:</strong> Built-in deep license auditing automatically satisfies MIT, Apache, and BSD open-source redistribution requirements out of the box.</li>
+                    <li><strong>WASI Constraints:</strong> The virtual OS is jailed to precisely one isolated
+                        `preopened_dir` (`/sandbox`) which exclusively contains the target archive and extraction
+                        destination, locking out all host directories.</li>
+                    <li><strong>Dynamic Scheduling:</strong> CPU cycles (Fuel) are dynamically rationed based on
+                        original archive size, securely unpacking 50GB files while instantly terminating infinite-loop
+                        zero-day logic bombs.</li>
+                    <li><strong>Enterprise Compliance:</strong> Built-in deep license auditing automatically satisfies
+                        MIT, Apache, and BSD open-source redistribution requirements out of the box.</li>
                 </ul>
             </div>
         </section>
@@ -206,7 +220,8 @@
         </div>
         <div class="glass-panel fade-in-up" style="padding: 2.5rem;">
             <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;">
+                <div
+                    style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;">
                     <div>
                         <h3 style="margin-bottom: 0.5rem;">Cross-Platform Packages</h3>
                         <ul class="check-list" style="margin-bottom: 0;">
@@ -215,20 +230,34 @@
                             <li><strong>macOS:</strong> <code>.dmg</code> Apple Silicon bundles</li>
                         </ul>
                     </div>
-                    <a href="https://github.com/Cyber-Sec-Space/zdefuser/releases/latest" class="btn-primary" style="margin-left: auto;">Go to Releases Page</a>
+                    <a href="https://github.com/Cyber-Sec-Space/zdefuser/releases/latest" class="btn-primary"
+                        style="margin-left: auto;">Go to Releases Page</a>
                 </div>
 
                 <div style="border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 1.5rem;">
                     <h4 style="color: #FF7A7A; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
+                            </path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
                         macOS Security Notice (Unsigned App)
                     </h4>
                     <p style="font-size: 0.95rem; color: rgba(255, 255, 255, 0.7); margin-bottom: 1rem;">
-                        Because this application is not natively code-signed with an Apple Developer Certificate, Gatekeeper will block the app upon first launch with a warning like "App is damaged and can't be opened" or "Unidentified Developer".
+                        Because this application is not natively code-signed with an Apple Developer Certificate,
+                        Gatekeeper will block the app upon first launch with a warning like "App is damaged and can't be
+                        opened" or "Unidentified Developer".
                     </p>
-                    <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 1rem;">
-                        <p style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255, 255, 255, 0.5); margin-bottom: 0.5rem;">To fix this, open your Terminal and run:</p>
-                        <code style="font-family: monospace; color: #7A82FF; font-size: 1.1rem; word-break: break-all;">xattr -cr /Applications/ZDefuser.app</code>
+                    <div
+                        style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 1rem;">
+                        <p
+                            style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255, 255, 255, 0.5); margin-bottom: 0.5rem;">
+                            To fix this, open your Terminal and run:</p>
+                        <code
+                            style="font-family: monospace; color: #7A82FF; font-size: 1.1rem; word-break: break-all;">xattr -cr /Applications/ZDefuser.app</code>
                     </div>
                 </div>
             </div>
@@ -239,11 +268,13 @@
         <div class="container footer-content glass-panel">
             <div class="brand">
                 <div class="logo">
-                    <img src="apple-touch-icon.png" alt="ZDefuser Logo" width="28" height="28" style="background-color: transparent;">
+                    <img src="apple-touch-icon.png" alt="ZDefuser Logo" width="28" height="28"
+                        style="background-color: transparent;">
                     <span>Defuser</span>
                 </div>
                 <p>Absolute extraction security.</p>
-                <p style="margin-top: 12px; font-size: 0.8rem; color: rgba(255, 255, 255, 0.4);">&copy; 2026 Cyber Sec Space. All rights reserved.</p>
+                <p style="margin-top: 12px; font-size: 0.8rem; color: rgba(255, 255, 255, 0.4);">&copy; 2026 Cyber Sec
+                    Space. All rights reserved.</p>
             </div>
             <div class="footer-links">
                 <a href="https://github.com/Cyber-Sec-Space/zdefuser">Source Code</a>
