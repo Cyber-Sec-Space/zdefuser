@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://cyber-sec-space.github.io/zdefuser/sitemap.xml
