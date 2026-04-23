@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import { invoke } from '@tauri-apps/api/core';
 import { DropZone } from "./components/DropZone";
@@ -11,6 +11,13 @@ function App() {
   const [isComplete, setIsComplete] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [password, setPassword] = useState("");
+  const passwordRef = useRef("");
+
+  // Sync ref with state
+  useEffect(() => {
+    passwordRef.current = password;
+  }, [password]);
 
   useEffect(() => {
     let unlisten: UnlistenFn | undefined;
@@ -35,13 +42,22 @@ function App() {
 
     listen<{ paths: string[] }>("tauri://drag-drop", async (event) => {
       if (!isProcessing && event.payload.paths.length > 0) {
-        const path = event.payload.paths[0];
+        const path = event.payload.paths[0].toLowerCase();
+        
+        if (!path.endsWith('.zip') && !path.endsWith('.tar') && !path.endsWith('.tar.gz') && !path.endsWith('.tgz') && !path.endsWith('.rar')) {
+          setHasError(true);
+          setEvents([{ type: 'error', code: 'UNSUPPORTED', details: 'Unsupported file type. Please use .zip, .rar, .tar, or .tgz', file: path, current: 0, total: 0, bytes: 0 }]);
+          setIsComplete(true);
+          return;
+        }
+
         handleAnalyzeStarted(path);
         try {
-          // We don't have a password prompt for global drag-drop yet so it's undefined
-          await invoke('analyze_archive', { archivePath: path });
+          const pwdArg = passwordRef.current.trim() ? passwordRef.current.trim() : undefined;
+          await invoke('analyze_archive', { archivePath: event.payload.paths[0], password: pwdArg });
         } catch (e) {
           setHasError(true);
+          setEvents([{ type: 'error', code: 'RUNTIME_ERROR', details: String(e), file: path, current: 0, total: 0, bytes: 0 }]);
         }
       }
     }).then(f => {
@@ -93,7 +109,11 @@ function App() {
 
       <div className="main-content">
         {!isProcessing ? (
-          <DropZone onAnalyzeStarted={handleAnalyzeStarted} />
+          <DropZone 
+            onAnalyzeStarted={handleAnalyzeStarted} 
+            password={password}
+            setPassword={setPassword}
+          />
         ) : (
           <ProgressPanel
             events={events}

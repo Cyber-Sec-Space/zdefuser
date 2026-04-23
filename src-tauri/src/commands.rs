@@ -23,7 +23,7 @@ pub async fn analyze_archive(
     // We build the json command
     let limits = json!({
         "max_ratio": 100,
-        "max_total_bytes": 100 * 1024 * 1024 * 1024 as u64, // 100GB
+        "max_total_bytes": 100 * 1024 * 1024 * 1024_u64, // 100GB
         "max_files": 500_000 // For huge dataset/node_modules zip bombs
     });
 
