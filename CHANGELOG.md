@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.2] - 2026-04-23
+
+### Fixed
+- **UI Error Visualization**: Fixed a silent error bug in `App.tsx` where early `drag-drop` global extension validation failures (e.g., rejecting `.exe` files) would silently set the error state without successfully triggering the main container to transition to the `ProgressPanel` UI.
+- **TypeScript Mismatch**: Removed explicitly undefined arbitrary fields (`file`, `current`, `total`, `bytes`) from the `SandboxEvent` error payloads, rectifying severe `ts-jest` parser mismatches against the strongly typed layout.
+- **Coverage Refinement**: Closed a minor branch loophole in the global parameter passing, boosting the rigorous `ts-jest` framework fully back to 100% Branch and Line coverage constraints.
+
+
 ## [1.0.1] - 2026-04-23
 
 ### Added
