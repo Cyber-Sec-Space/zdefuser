@@ -2,10 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.1.0] - 2026-04-23
+## [1.0.1] - 2026-04-23
 
 ### Added
-- **Project Badges**: Added Shields.io badges to the `README.md` explicitly demonstrating the `100% Test Coverage`, `1.1.0` version phase, and `Snyk 0 Vulnerabilities` status for enterprise credibility.
+- **Project Badges**: Added Shields.io badges to the `README.md` explicitly demonstrating the `100% Test Coverage`, `1.0.1` version phase, and `Snyk 0 Vulnerabilities` status for enterprise credibility.
 
 ### Changed
 - **Wasm Case Sensitivity Validation**: Resolved a logic crash inside `wasm-sandbox/src/main.rs` where archives with uppercase extensions (`.ZIP`, `.TAR.GZ`) triggered an "Unsupported format" Wasm trap. Extension evaluation is now perfectly case-insensitive.
