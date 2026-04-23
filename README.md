@@ -51,7 +51,7 @@ graph TD;
 ### Tech Stack
 * **Host**: [Tauri v2](https://v2.tauri.app/) (Rust)
 * **Isolated Virtual Machine (Sandbox)**: [Wasmtime v29](https://wasmtime.dev/) (`wasm32-wasip1`)
-* **Frontend UI**: React + TypeScript + Vite + Vanilla CSS (Dark minimal aesthetics)
+* **Frontend UI**: React + TypeScript + Vite + Vanilla CSS (Dark minimal aesthetics featuring a Live Threat Telemetry Dashboard)
 * **Inter-process Communication**: Async Tokio MPSC Channels
 
 ### 📜 Enterprise Legal Compliance & Dual Licensing
@@ -147,7 +147,7 @@ graph TD;
 ### 核心技術棧 (Tech Stack)
 * **宿主架構 (Host)**: [Tauri v2](https://v2.tauri.app/) (Rust)
 * **隔離虛擬機 (Sandbox)**: [Wasmtime v29](https://wasmtime.dev/) (`wasm32-wasip1`)
-* **使用者介面 (Frontend)**: React + TypeScript + Vite + Vanilla CSS (極黑幾何美學)
+* **使用者介面 (Frontend)**: React + TypeScript + Vite + Vanilla CSS (極黑幾何美學與即時威脅遙測儀表板)
 * **通訊層**: 異步 Tokio 管道 (Async MPSC Channels)
 
 ### 📜 企業級合規性與雙重授權 (Dual Licensing)
