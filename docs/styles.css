@@ -210,10 +210,12 @@ nav a:hover {
 .hero-visual {
     flex: 1;
     position: relative;
+    min-width: 0;
 }
 
 .app-mockup {
     width: 100%;
+    max-width: 100%;
     height: auto;
     border-radius: 16px;
     border: 1px solid var(--card-border);
@@ -303,10 +305,12 @@ nav a:hover {
 
 .split-visual {
     flex: 1;
+    min-width: 0;
 }
 
 .concept-art {
     width: 100%;
+    max-width: 100%;
     height: auto;
     border-radius: 16px;
     border: 1px solid var(--card-border);
@@ -441,12 +445,18 @@ footer {
 }
 
 @media (max-width: 640px) {
-    nav {
+    .header-container {
+        flex-direction: column;
+        justify-content: center;
+        height: auto;
+        padding: 16px 0;
         gap: 16px;
     }
-    
-    nav a[href="#features"], nav a[href="#how-it-works"] {
-        display: none;
+
+    nav {
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
     }
     
     .footer-content {
