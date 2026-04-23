@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "ZDefuser"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "cap-std",
  "serde",
@@ -5549,7 +5549,7 @@ dependencies = [
 
 [[package]]
 name = "wasm-sandbox"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "crc32fast",
  "flate2",
