@@ -200,4 +200,25 @@ describe('App Root Component', () => {
     // Depending on CSS it might still be in DOM but isOpen is false.
     // The main point is line 107 coverage (onClose) is triggered!
   });
+
+  it('handles invalid file extension drop globally', async () => {
+    let dropCallback: any;
+    (event.listen as jest.Mock).mockImplementation((evtName, cb) => {
+      if (evtName === 'tauri://drag-drop') dropCallback = cb;
+      return Promise.resolve(jest.fn());
+    });
+
+    render(<App />);
+    await act(async () => {
+      await new Promise(process.nextTick);
+    });
+
+    await act(async () => {
+      dropCallback({ payload: { paths: ['/bad.exe'] } });
+    });
+    
+    expect(screen.getByText('Sandbox Execution')).toBeInTheDocument();
+    expect(screen.getByText('Blocked')).toBeInTheDocument();
+    expect(screen.getByText(/Unsupported file type/)).toBeInTheDocument();
+  });
 });
