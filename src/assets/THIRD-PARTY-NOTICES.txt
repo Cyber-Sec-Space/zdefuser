@@ -6,135 +6,10 @@ This software is based in part on the work of the following open source projects
 
 --- NODE.JS (FRONTEND) DEPENDENCIES ---
 
-Package: @tauri-apps/api@2.10.1
-License: Apache-2.0 OR MIT
-Repository: https://github.com/tauri-apps/tauri
-License Text Snippet:
-# @tauri-apps/api
-
- <img align="right" src="https://github.com/tauri-apps/tauri/raw/dev/.github/icon.png" height="128" width="128">
-
-[![status](https://img.shields.io/badge/status-stable-blue.svg)](https://github.com/tauri-apps/tauri/tree/dev)
-[![License](https://img.shields.io/badge/License-MIT%20or%20Apache%202-green.svg)](https://opencollective.com/tauri)
-[![lint js](https://img.shields.io/github/actions/workflow/status/tauri-apps/tauri/lint-js.yml?label=lint%20js&logo=github)](https://github...
-----------------------------------------
-
-Package: @tauri-apps/plugin-dialog@2.7.0
-License: MIT OR Apache-2.0
-Repository: https://github.com/tauri-apps/plugins-workspace
-License Text Snippet:
-SPDXVersion: SPDX-2.1
-DataLicense: CC0-1.0
-PackageName: tauri
-DataFormat: SPDXRef-1
-PackageSupplier: Organization: The Tauri Programme in the Commons Conservancy
-PackageHomePage: https://tauri.app
-PackageLicenseDeclared: Apache-2.0
-PackageLicenseDeclared: MIT
-PackageCopyrightText: 2019-2022, The Tauri Programme in the Commons Conservancy
-PackageSummary: <text>Tauri is a rust project that enables developers to make secure
-and small desktop applications using a web frontend.
-                </text...
-----------------------------------------
-
-Package: @tauri-apps/plugin-opener@2.5.3
-License: MIT OR Apache-2.0
-Repository: https://github.com/tauri-apps/plugins-workspace
-License Text Snippet:
-SPDXVersion: SPDX-2.1
-DataLicense: CC0-1.0
-PackageName: tauri
-DataFormat: SPDXRef-1
-PackageSupplier: Organization: The Tauri Programme in the Commons Conservancy
-PackageHomePage: https://tauri.app
-PackageLicenseDeclared: Apache-2.0
-PackageLicenseDeclared: MIT
-PackageCopyrightText: 2019-2022, The Tauri Programme in the Commons Conservancy
-PackageSummary: <text>Tauri is a rust project that enables developers to make secure
-and small desktop applications using a web frontend.
-                </text...
-----------------------------------------
-
-Package: react-dom@19.2.5
-License: MIT
-Repository: https://github.com/facebook/react
-License Text Snippet:
-MIT License
-
-Copyright (c) Meta Platforms, Inc. and affiliates.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-T...
-----------------------------------------
-
-Package: react@19.2.5
-License: MIT
-Repository: https://github.com/facebook/react
-License Text Snippet:
-MIT License
-
-Copyright (c) Meta Platforms, Inc. and affiliates.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-T...
-----------------------------------------
-
-Package: scheduler@0.27.0
-License: MIT
-Repository: https://github.com/facebook/react
-License Text Snippet:
-MIT License
-
-Copyright (c) Meta Platforms, Inc. and affiliates.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-T...
-----------------------------------------
-
-Package: zdefuser@1.0.0-rc.1
-License: UNLICENSED
-Repository: N/A
-License Text Snippet:
-# 🛡 ZDefuser
-
-> Zero-Trust Sandboxed Extraction for macOS, Linux, & Windows.  
-> 專屬工程師與資安研究員的跨平台終極物理隔離解壓縮防護傘。
-
----
-
-[English](#english) | [繁體中文](#繁體中文)
-
----
-
-<br>
-
-<h2 id="english">English</h2>
-
-**ZDefuser** is a highly secure archive extraction tool built for engineers and security researchers. By combining unidirectional WebAssembly (Wasm) isolation technology with the native OS interface, it analyzes and extracts `.zip`, `.rar`, `.tar`, and `.tar.gz / .tgz` files of unknown origins within a "...
-----------------------------------------
-
 
 --- RUST (BACKEND) DEPENDENCIES ---
 
-Crate: ZDefuser v1.0.0-rc.1
+Crate: ZDefuser v1.0.1
 License: None
 Repository: None
 ----------------------------------------
@@ -2774,7 +2649,7 @@ License: Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT
 Repository: https://github.com/bytecodealliance/wasm-tools/tree/main/crates/wasm-metadata
 ----------------------------------------
 
-Crate: wasm-sandbox v0.1.0
+Crate: wasm-sandbox v1.0.1
 License: None
 Repository: None
 ----------------------------------------
@@ -3419,7 +3294,7 @@ License: MIT
 Repository: https://github.com/z-galaxy/zbus/
 ----------------------------------------
 
-Crate: ZDefuser v1.0.0-rc.1 (WASM Sandbox)
+Crate: ZDefuser v1.0.1 (WASM Sandbox)
 License: None
 Repository: None
 ----------------------------------------
@@ -6059,7 +5934,7 @@ License: Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT
 Repository: https://github.com/bytecodealliance/wasm-tools/tree/main/crates/wasm-metadata
 ----------------------------------------
 
-Crate: wasm-sandbox v0.1.0 (WASM Sandbox)
+Crate: wasm-sandbox v1.0.1 (WASM Sandbox)
 License: None
 Repository: None
 ----------------------------------------

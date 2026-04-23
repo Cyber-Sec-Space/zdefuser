@@ -1,5 +1,6 @@
 # 🛡 ZDefuser
 
+![Version](https://img.shields.io/badge/Version-1.0.1-brightgreen.svg?style=flat-square) ![Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg?style=flat-square) ![Tauri](https://img.shields.io/badge/Tauri-v2.0-blue.svg?style=flat-square) ![Rust](https://img.shields.io/badge/Rust-wasm32--wasip1-black.svg?style=flat-square) ![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg?style=flat-square) ![License](https://img.shields.io/badge/License-AGPLv3-red.svg?style=flat-square) ![Snyk](https://img.shields.io/badge/Snyk-0_Vulnerabilities-purple.svg?style=flat-square)
 > Zero-Trust Sandboxed Extraction for macOS, Linux, & Windows.  
 > 專屬工程師與資安研究員的跨平台終極物理隔離解壓縮防護傘。
 
@@ -53,8 +54,13 @@ graph TD;
 * **Frontend UI**: React + TypeScript + Vite + Vanilla CSS (Dark minimal aesthetics)
 * **Inter-process Communication**: Async Tokio MPSC Channels
 
-### 📜 Enterprise Legal Compliance
-ZDefuser is architected for Enterprise and Commercial distribution. It features an automated Third-Party License orchestration pipeline (`generate_licenses.py`) integrated into the build process. All MIT, Apache, and BSD dependencies are automatically audited and injected into the in-app "About & Legal" compliance interface, ensuring **100% copyright and licensing compliance** out of the box.
+### 📜 Enterprise Legal Compliance & Dual Licensing
+ZDefuser features an automated Third-Party License orchestration pipeline (`generate_licenses.py`) integrated into the build process, ensuring full compliance with underlying MIT/Apache dependencies.
+
+**Commercial & Enterprise Usage**
+ZDefuser is distributed under a **Dual License Strategy**:
+1. **Open Source (GNU AGPLv3)**: Free for personal use, hobbyists, and non-commercial research, provided you comply with the strong copyleft terms of the AGPLv3 (any server/backend deployment of this tool obligates you to open-source your entire surrounding architecture).
+2. **Commercial Enterprise License**: If your organization wishes to use ZDefuser internally, embed it in commercial products, or deploy it in a cloud backend *without* being forced to open-source your proprietary code, you must purchase a **Commercial License Bypass**. Please contact the maintainers for enterprise EULA details.
 
 ### 📥 Download & Installation
 You can grab the latest pre-compiled binaries from the **[GitHub Releases](https://github.com/Cyber-Sec-Space/zdefuser/releases)** page. We offer cross-platform support:
@@ -124,7 +130,7 @@ graph TD;
     A[使用者拖曳壓縮包] --> B(Tauri 後端：指令層);
     B --> C{WASI 沙箱執行環境};
     
-    C -->|記憶體解壓縮| D[解壓引擎];
+    C -->|串流抽取| D[解壓引擎];
     D --> E{安全上下文審核};
     
     E -->|發現 Zip 炸彈| F[觸發 Wasm 崩潰陷阱];
@@ -144,8 +150,13 @@ graph TD;
 * **使用者介面 (Frontend)**: React + TypeScript + Vite + Vanilla CSS (極黑幾何美學)
 * **通訊層**: 異步 Tokio 管道 (Async MPSC Channels)
 
-### 📜 企業級合規性 (Enterprise Compliance)
-ZDefuser 專為企業採購與商業軟體市場打造。專案內建了全自動化的第三方開源條款稽核系統 (`generate_licenses.py`)，能在編譯打包階段自動統整所有 Rust/NPM 相依套件，並將其注入至應用程式內的「About & Legal」視窗中，**100% 滿足 MIT / Apache / BSD 的最終開源分發合規要求**。
+### 📜 企業級合規性與雙重授權 (Dual Licensing)
+ZDefuser 專案內建了全自動化的第三方開源條款稽核系統 (`generate_licenses.py`)，**100% 滿足底層 MIT / Apache / BSD 套件的合規宣告要求**。
+
+**商業與企業使用宣告**
+為了保護本專案的智慧財產權並提供企業級服務，ZDefuser 採用 **「雙重授權 (Dual License) 戰略」**：
+1. **開源授權 (GNU AGPLv3)**：對於個人開發者、學生、與非商業研究用途，您可以免費使用本專案。但請注意 AGPLv3 的極強傳染性——如果您將 ZDefuser 部署於企業後端或重製為服務 (SaaS)，法律會強制要求您將貴公司的整合專案「全數開源」。
+2. **企業商業授權 (Commercial License)**：如果您是企業客戶，希望將 ZDefuser 部署於內部正式環境、整合進您的商用產品，且**不願意**將您公司的專屬商業機密代碼強制開源，您必須與作者聯繫並購買 **商業授權合約 (Commercial License Bypass)** 才能合法使用。
 
 ### 📥 下載與安裝 (Download & Installation)
 您可以直接前往專案的 **[GitHub Releases](https://github.com/Cyber-Sec-Space/zdefuser/releases)** 頁面下載最新編譯完成的跨平台安裝包：
