@@ -33,23 +33,24 @@ fn main() {
 
     // 3. Determine archive type and execute
     if cmd.action == "extract" {
-        let result = if cmd.archive_path.ends_with(".zip") {
+        let arch_lower = cmd.archive_path.to_lowercase();
+        let result = if arch_lower.ends_with(".zip") {
             decompress::extract_zip(
                 &cmd.archive_path,
                 &cmd.output_dir,
                 cmd.password.as_deref(),
                 &cmd.limits,
             )
-        } else if cmd.archive_path.ends_with(".rar") {
+        } else if arch_lower.ends_with(".rar") {
             decompress::extract_rar(
                 &cmd.archive_path,
                 &cmd.output_dir,
                 cmd.password.as_deref(),
                 &cmd.limits,
             )
-        } else if cmd.archive_path.ends_with(".tar") {
+        } else if arch_lower.ends_with(".tar") {
             decompress::extract_tar(&cmd.archive_path, &cmd.output_dir, false, &cmd.limits)
-        } else if cmd.archive_path.ends_with(".tar.gz") || cmd.archive_path.ends_with(".tgz") {
+        } else if arch_lower.ends_with(".tar.gz") || arch_lower.ends_with(".tgz") {
             decompress::extract_tar(&cmd.archive_path, &cmd.output_dir, true, &cmd.limits)
         } else {
             Err("Unsupported format".to_string())
