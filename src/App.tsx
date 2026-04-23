@@ -46,7 +46,7 @@ function App() {
         
         if (!path.endsWith('.zip') && !path.endsWith('.tar') && !path.endsWith('.tar.gz') && !path.endsWith('.tgz') && !path.endsWith('.rar')) {
           setHasError(true);
-          setEvents([{ type: 'error', code: 'UNSUPPORTED', details: 'Unsupported file type. Please use .zip, .rar, .tar, or .tgz', file: path, current: 0, total: 0, bytes: 0 }]);
+          setEvents([{ type: 'error', code: 'UNSUPPORTED', details: 'Unsupported file type. Please use .zip, .rar, .tar, or .tgz' }]);
           setIsComplete(true);
           return;
         }
@@ -57,7 +57,7 @@ function App() {
           await invoke('analyze_archive', { archivePath: event.payload.paths[0], password: pwdArg });
         } catch (e) {
           setHasError(true);
-          setEvents([{ type: 'error', code: 'RUNTIME_ERROR', details: String(e), file: path, current: 0, total: 0, bytes: 0 }]);
+          setEvents([{ type: 'error', code: 'RUNTIME_ERROR', details: String(e) }]);
         }
       }
     }).then(f => {

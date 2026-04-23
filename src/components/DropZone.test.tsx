@@ -1,10 +1,9 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { DropZone } from './DropZone';
+import { useState } from 'react';
 import { open } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
-
-import React, { useState } from 'react';
 
 const TestDropZone = (props: any) => {
   const [pwd, setPwd] = useState("");
