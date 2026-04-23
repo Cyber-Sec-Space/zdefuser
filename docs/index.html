@@ -62,13 +62,20 @@
     }
     </script>
 
+    <!-- Preload LCP Background -->
+    <link rel="preload" href="./assets/hero_bg.png" as="image">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Outfit:wght@400;600;800&display=swap"
-        rel="stylesheet">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Outfit:wght@400;600;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Outfit:wght@400;600;800&display=swap" media="print" onload="this.media='all'">
+    <noscript>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Outfit:wght@400;600;800&display=swap">
+    </noscript>
 
+    <!-- Async Stylesheets -->
+    <link rel="preload" href="./styles.css" as="style">
     <link rel="stylesheet" href="./styles.css">
 </head>
 
@@ -109,7 +116,7 @@
                 </div>
                 <div class="hero-visual">
                     <div class="glass-orb"></div>
-                    <img src="./assets/app-screenshot.png" alt="ZDefuser Interface" class="app-mockup shadow-glow">
+                    <img src="./assets/app-screenshot.png" alt="ZDefuser Interface" class="app-mockup shadow-glow" width="1600" height="1200" fetchpriority="high" decoding="async">
                 </div>
             </div>
         </section>
@@ -175,7 +182,7 @@
         <section id="how-it-works" class="container layout-split">
             <div class="split-visual fade-in-up">
                 <img src="./assets/sandbox_concept.png" alt="WASM Sandbox Conceptual Art"
-                    class="concept-art shadow-glow">
+                    class="concept-art shadow-glow" width="1024" height="1024" loading="lazy" decoding="async">
             </div>
             <div class="split-text fade-in-up">
                 <h2>The WebAssembly <span class="text-gradient">Quarantine Zone</span></h2>
