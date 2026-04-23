@@ -31,7 +31,7 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
                     </button>
                 </div>
                 <div className="modal-body">
-                    <p className="app-version">Version 1.0.1</p>
+                    <p className="app-version">Version 1.0.2</p>
                     <p className="app-description">
                         Zero-Trust Sandboxed Extraction for macOS and Windows. 
                         Powered by Wasmtime.

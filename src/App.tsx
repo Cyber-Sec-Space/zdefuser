@@ -45,6 +45,7 @@ function App() {
         const path = event.payload.paths[0].toLowerCase();
         
         if (!path.endsWith('.zip') && !path.endsWith('.tar') && !path.endsWith('.tar.gz') && !path.endsWith('.tgz') && !path.endsWith('.rar')) {
+          handleAnalyzeStarted(path);
           setHasError(true);
           setEvents([{ type: 'error', code: 'UNSUPPORTED', details: 'Unsupported file type. Please use .zip, .rar, .tar, or .tgz' }]);
           setIsComplete(true);
