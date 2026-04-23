@@ -86,7 +86,7 @@ header {
 .logo {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 4px;
     font-family: var(--font-heading);
     font-weight: 800;
     font-size: 1.25rem;

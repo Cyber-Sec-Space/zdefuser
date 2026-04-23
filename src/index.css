@@ -65,7 +65,7 @@ body {
   margin-bottom: 0.5rem;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
 
 .text-gradient {
