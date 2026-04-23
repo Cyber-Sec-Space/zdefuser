@@ -221,4 +221,28 @@ describe('App Root Component', () => {
     expect(screen.getByText('Blocked')).toBeInTheDocument();
     expect(screen.getByText(/Unsupported file type/)).toBeInTheDocument();
   });
+
+  it('passes password correctly on valid drop', async () => {
+    let dropCallback: any;
+    (event.listen as jest.Mock).mockImplementation((evtName, cb) => {
+      if (evtName === 'tauri://drag-drop') dropCallback = cb;
+      return Promise.resolve(jest.fn());
+    });
+    
+    (invoke as jest.Mock).mockResolvedValue(true);
+
+    render(<App />);
+    await act(async () => {
+      await new Promise(process.nextTick);
+    });
+
+    const pwdInput = screen.getByPlaceholderText('Archive password (optional)');
+    fireEvent.change(pwdInput, { target: { value: 'globalpwd' } });
+
+    await act(async () => {
+      dropCallback({ payload: { paths: ['/good_with_pwd.zip'] } });
+    });
+    
+    expect(invoke).toHaveBeenCalledWith('analyze_archive', { archivePath: '/good_with_pwd.zip', password: 'globalpwd' });
+  });
 });
