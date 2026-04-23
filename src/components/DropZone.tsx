@@ -5,12 +5,13 @@ import { open } from '@tauri-apps/plugin-dialog';
 
 interface DropZoneProps {
   onAnalyzeStarted: (path: string, password?: string) => void;
+  password: string;
+  setPassword: (pwd: string) => void;
 }
 
-export const DropZone: React.FC<DropZoneProps> = ({ onAnalyzeStarted }) => {
+export const DropZone: React.FC<DropZoneProps> = ({ onAnalyzeStarted, password, setPassword }) => {
   const [isDragActive, setIsDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [password, setPassword] = useState<string>('');
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();

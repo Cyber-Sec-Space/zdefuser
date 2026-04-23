@@ -106,7 +106,7 @@ pub fn extract_zip(
         } else {
             if let Some(p) = out_path.parent() {
                 if !p.exists() {
-                    fs::create_dir_all(&p).ok();
+                    fs::create_dir_all(p).ok();
                 }
             }
             let mut outfile =
@@ -208,7 +208,7 @@ pub fn extract_tar(
         } else if entry_type.is_file() {
             if let Some(p) = out_path.parent() {
                 if !p.exists() {
-                    fs::create_dir_all(&p).ok();
+                    fs::create_dir_all(p).ok();
                 }
             }
             let mut outfile =
