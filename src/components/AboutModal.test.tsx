@@ -11,7 +11,7 @@ describe('AboutModal', () => {
   it('renders correctly when isOpen is true', () => {
     render(<AboutModal isOpen={true} onClose={jest.fn()} />);
     expect(screen.getByText('ZDefuser - About & Licenses')).toBeInTheDocument();
-    expect(screen.getByText('Version 1.0.0-rc.1')).toBeInTheDocument();
+    expect(screen.getByText('Version 1.0.1')).toBeInTheDocument();
   });
 
   it('calls onClose when close button is clicked', () => {
