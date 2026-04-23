@@ -24,7 +24,8 @@ export const DropZone: React.FC<DropZoneProps> = ({ onAnalyzeStarted, password, 
   };
 
   const processFile = async (filePath: string) => {
-    if (!filePath.endsWith('.zip') && !filePath.endsWith('.tar') && !filePath.endsWith('.tar.gz') && !filePath.endsWith('.tgz') && !filePath.endsWith('.rar')) {
+    const lowerPath = filePath.toLowerCase();
+    if (!lowerPath.endsWith('.zip') && !lowerPath.endsWith('.tar') && !lowerPath.endsWith('.tar.gz') && !lowerPath.endsWith('.tgz') && !lowerPath.endsWith('.rar')) {
       setError('Unsupported file type. Please use .zip, .rar, .tar, or .tgz');
       return;
     }
