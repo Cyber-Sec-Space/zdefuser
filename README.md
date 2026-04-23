@@ -1,6 +1,6 @@
 # 🛡 ZDefuser
 
-![Version](https://img.shields.io/badge/Version-1.1.0-brightgreen.svg?style=flat-square) ![Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg?style=flat-square) ![Tauri](https://img.shields.io/badge/Tauri-v2.0-blue.svg?style=flat-square) ![Rust](https://img.shields.io/badge/Rust-wasm32--wasip1-black.svg?style=flat-square) ![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg?style=flat-square) ![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square) ![Snyk](https://img.shields.io/badge/Snyk-0_Vulnerabilities-purple.svg?style=flat-square)
+![Version](https://img.shields.io/badge/Version-1.0.1-brightgreen.svg?style=flat-square) ![Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg?style=flat-square) ![Tauri](https://img.shields.io/badge/Tauri-v2.0-blue.svg?style=flat-square) ![Rust](https://img.shields.io/badge/Rust-wasm32--wasip1-black.svg?style=flat-square) ![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg?style=flat-square) ![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square) ![Snyk](https://img.shields.io/badge/Snyk-0_Vulnerabilities-purple.svg?style=flat-square)
 > Zero-Trust Sandboxed Extraction for macOS, Linux, & Windows.  
 > 專屬工程師與資安研究員的跨平台終極物理隔離解壓縮防護傘。
 
