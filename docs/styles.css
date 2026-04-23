@@ -214,14 +214,12 @@ nav a:hover {
 
 .app-mockup {
     width: 100%;
+    height: auto;
     border-radius: 16px;
     border: 1px solid var(--card-border);
     position: relative;
     z-index: 2;
     background: #000;
-    /* Aspect ratio fallback for styling before user drops image */
-    min-height: 350px;
-    object-fit: cover;
 }
 
 .shadow-glow {
@@ -309,6 +307,7 @@ nav a:hover {
 
 .concept-art {
     width: 100%;
+    height: auto;
     border-radius: 16px;
     border: 1px solid var(--card-border);
 }
@@ -443,7 +442,11 @@ footer {
 
 @media (max-width: 640px) {
     nav {
-        display: none; /* simple burger menu omission for static */
+        gap: 16px;
+    }
+    
+    nav a[href="#features"], nav a[href="#how-it-works"] {
+        display: none;
     }
     
     .footer-content {
