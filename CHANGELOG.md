@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [main] - 2026-04-28
+## [v1.1.0] - 2026-04-28
 
 ### Added
 - **7z Archive Support**: Implemented comprehensive Zero-Trust `.7z` archive extraction capabilities within the Wasmtime sandbox.
