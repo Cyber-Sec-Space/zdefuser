@@ -7,7 +7,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - **7z Archive Support**: Implemented comprehensive Zero-Trust `.7z` archive extraction capabilities within the Wasmtime sandbox.
 - **LZMA/LZMA2 Isolation**: Utilized `sevenz-rust`, a pure-Rust parser (Apache 2.0 / MIT), avoiding vulnerable C/C++ bindings and perfectly quarantining decryption/decompression inside the WebAssembly linear memory boundary.
-- **7z Bomb Defusion**: Fortified the extraction logic to track solid-block `.7z` decompressed streaming bytes, instantly trapping the WebAssembly runtime and dropping the Payload if the Max Bytes/Fuel constraints are exceeded.
+### Security
+- **Critical Audit Patch (Unbounded Stream Mitigation)**: Discovered and patched a theoretical header-spoofing vulnerability across the Wasm sandboxed Zip, Tar, and 7z parsers. Previously, `std::io::copy` relied solely on Wasm Fuel tracking to abort stream exhaustion. We now enforce `std::io::Read::take()` to mathematically truncate streams exactly at the declared header size, guaranteeing that spoofed payload expansions are physically severed.
 
 ## [1.0.2] - 2026-04-23
 
