@@ -76,6 +76,18 @@
   transition: width 0.2s ease-out;
 }
 
+.progress-bar-fill.indeterminate {
+  width: 100% !important;
+  background: linear-gradient(90deg, var(--border) 0%, var(--text-primary) 50%, var(--border) 100%);
+  background-size: 200% 100%;
+  animation: indeterminate-progress 1.5s infinite linear;
+}
+
+@keyframes indeterminate-progress {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 .logs-container {
   flex: 1;
   overflow-y: auto;
