@@ -16,6 +16,15 @@ interface ProgressPanelProps {
   onReset: () => void;
 }
 
+const formatBytes = (bytes: number, decimals = 2) => {
+  if (!+bytes) return '0 Bytes';
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+};
+
 export const ProgressPanel: React.FC<ProgressPanelProps> = ({ events, isComplete, hasError, onReset }) => {
   const logEndRef = useRef<HTMLDivElement>(null);
 
@@ -66,12 +75,17 @@ export const ProgressPanel: React.FC<ProgressPanelProps> = ({ events, isComplete
         <div className="status-indicator">
           <div className={`dot ${hasError ? 'error' : isComplete ? 'success' : 'scanning'}`}></div>
           <span>{hasError ? 'Blocked' : isComplete ? 'Verified' : 'Processing'}</span>
+          {!isComplete && !hasError && (
+            <span style={{ opacity: 0.7, marginLeft: '4px' }}>
+              ({formatBytes(events.filter(e => e.type === 'progress').reduce((acc, e) => acc + (e as any).bytes, 0))})
+            </span>
+          )}
         </div>
       </div>
 
       <div className="progress-bar-container">
         <div 
-          className="progress-bar-fill" 
+          className={`progress-bar-fill ${percentage === undefined && !isComplete && !hasError ? 'indeterminate' : ''}`} 
           style={{ width: `${percentage !== undefined ? percentage : 100}%` }}
         />
       </div>
@@ -79,7 +93,11 @@ export const ProgressPanel: React.FC<ProgressPanelProps> = ({ events, isComplete
       <div className="logs-container">
         {events.map((evt, idx) => {
           if (evt.type === 'progress') {
-            return <div key={idx} className="log-line info">Extracting: {evt.file}</div>;
+            return (
+              <div key={idx} className="log-line info">
+                Extracting: {evt.file} <span style={{ opacity: 0.6 }}>({formatBytes(evt.bytes)})</span>
+              </div>
+            );
           }
           if (evt.type === 'warning') {
             return <div key={idx} className="log-line warn">WARN [{evt.code}]: {evt.file} - {evt.details}</div>;
