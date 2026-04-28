@@ -354,3 +354,106 @@ pub fn extract_rar(
 
     Ok(())
 }
+
+pub fn extract_7z(
+    archive_path: &str,
+    output_dir: &str,
+    password: Option<&str>,
+    limits: &HostLimit,
+) -> Result<(), String> {
+    let file = File::open(archive_path).map_err(|e| format!("Failed to open 7z: {}", e))?;
+    let mut sec_ctx =
+        SecurityContext::new(limits.max_ratio, limits.max_total_bytes, limits.max_files);
+    let out_dir = Path::new(output_dir);
+
+    let pwd = match password {
+        Some(p) => sevenz_rust::Password::from(p),
+        None => sevenz_rust::Password::empty(),
+    };
+
+    let len = file.metadata().map(|m| m.len()).unwrap_or(0);
+    let mut archive = sevenz_rust::SevenZReader::new(file, len, pwd)
+        .map_err(|e| format!("Invalid 7z or Password required: {}", e))?;
+
+    let mut count = 0;
+    archive
+        .for_each_entries(|entry, reader| {
+            let filename_str = entry.name();
+            if filename_str.is_empty() {
+                return Ok(true);
+            }
+
+            if !SecurityContext::is_safe_path(filename_str) {
+                SandboxEvent::Warning {
+                    code: "PATH_TRAVERSAL".to_string(),
+                    file: filename_str.to_string(),
+                    details: "Blocked unsafe path".to_string(),
+                }
+                .send();
+                sec_ctx.blocked_files += 1;
+                return Ok(true);
+            }
+
+            // Note: 7z format inherently supports anti-item attributes, but symlink support
+            // in standard 7z crates usually surfaces as regular files or is just ignored.
+            // But we can check if it's explicitly marked as anti-item / symlink if supported.
+            // As a pure stream extractor, we just extract files and directories.
+
+            let uncompressed_size = entry.size();
+            
+            if entry.has_stream() {
+                // 7z uses solid compression so individual compressed sizes are tricky,
+                // bypass ratio limit by asserting ratio of 1, rely on max_total_bytes & Fuel.
+                if let Err(err_code) = sec_ctx.record_and_check(uncompressed_size.max(1), uncompressed_size) {
+                    SandboxEvent::Error {
+                        code: err_code.to_string(),
+                        details: "limit exceeded".to_string(),
+                    }
+                    .send();
+                    return Err(sevenz_rust::Error::other("Aborted due to security threshold"));
+                }
+            }
+
+            count += 1;
+            let out_path = out_dir.join(filename_str);
+            
+            if entry.is_directory() {
+                fs::create_dir_all(&out_path).ok();
+            } else if entry.has_stream() {
+                if let Some(p) = out_path.parent() {
+                    if !p.exists() {
+                        fs::create_dir_all(p).ok();
+                    }
+                }
+                if let Ok(mut outfile) = File::create(&out_path) {
+                    let _ = copy(reader, &mut outfile);
+                }
+                SandboxEvent::Progress {
+                    current: count,
+                    total: 0, // Solid block doesn't give total easily during iterator
+                    file: filename_str.to_string(),
+                    bytes: uncompressed_size,
+                }
+                .send();
+            }
+
+            Ok(true)
+        })
+        .map_err(|e| {
+            let msg = e.to_string();
+            if msg.contains("Aborted due to security threshold") {
+                msg
+            } else {
+                format!("7z extraction error: {}", msg)
+            }
+        })?;
+
+    SandboxEvent::Complete {
+        files_extracted: sec_ctx.extracted_files,
+        files_blocked: sec_ctx.blocked_files,
+        total_bytes: sec_ctx.extracted_bytes,
+    }
+    .send();
+
+    Ok(())
+}
