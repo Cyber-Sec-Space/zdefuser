@@ -44,10 +44,10 @@ function App() {
       if (!isProcessing && event.payload.paths.length > 0) {
         const path = event.payload.paths[0].toLowerCase();
         
-        if (!path.endsWith('.zip') && !path.endsWith('.tar') && !path.endsWith('.tar.gz') && !path.endsWith('.tgz') && !path.endsWith('.rar')) {
+        if (!path.endsWith('.zip') && !path.endsWith('.tar') && !path.endsWith('.tar.gz') && !path.endsWith('.tgz') && !path.endsWith('.rar') && !path.endsWith('.7z')) {
           handleAnalyzeStarted(path);
           setHasError(true);
-          setEvents([{ type: 'error', code: 'UNSUPPORTED', details: 'Unsupported file type. Please use .zip, .rar, .tar, or .tgz' }]);
+          setEvents([{ type: 'error', code: 'UNSUPPORTED', details: 'Unsupported file type. Please use .zip, .rar, .7z, .tar, or .tgz' }]);
           setIsComplete(true);
           return;
         }

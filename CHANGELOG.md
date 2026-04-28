@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [main] - 2026-04-28
+
+### Added
+- **7z Archive Support**: Implemented comprehensive Zero-Trust `.7z` archive extraction capabilities within the Wasmtime sandbox.
+- **LZMA/LZMA2 Isolation**: Utilized `sevenz-rust`, a pure-Rust parser (Apache 2.0 / MIT), avoiding vulnerable C/C++ bindings and perfectly quarantining decryption/decompression inside the WebAssembly linear memory boundary.
+- **7z Bomb Defusion**: Fortified the extraction logic to track solid-block `.7z` decompressed streaming bytes, instantly trapping the WebAssembly runtime and dropping the Payload if the Max Bytes/Fuel constraints are exceeded.
+
 ## [1.0.2] - 2026-04-23
 
 ### Fixed

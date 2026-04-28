@@ -91,7 +91,7 @@ describe('DropZone Component', () => {
       await new Promise(process.nextTick);
     });
     
-    expect(screen.getByText('Unsupported file type. Please use .zip, .rar, .tar, or .tgz')).toBeInTheDocument();
+    expect(screen.getByText('Unsupported file type. Please use .zip, .rar, .7z, .tar, or .tgz')).toBeInTheDocument();
     expect(mockOnAnalyzeStarted).not.toHaveBeenCalled();
   });
 

@@ -87,6 +87,7 @@ def main():
     create_encrypted_secret(payloads_dir)
     create_malicious_rtlo_zip(payloads_dir)
     create_out_of_bounds_rar(payloads_dir)
+    create_solid_7z_bomb(payloads_dir)
     
     # Clean up old payloads so they don't confuse the test
     if os.path.exists(os.path.join(payloads_dir, 'path_traversal.tar')):
@@ -117,6 +118,28 @@ def create_out_of_bounds_rar(output_dir):
         with open(rar_path, "r+b") as f:
             f.seek(50)  
             f.write(b"CORRUPTED_BYTES")
+
+def create_solid_7z_bomb(output_dir):
+    sz_path = os.path.join(output_dir, '08_solid_bomb.7z')
+    print(f"Generating {sz_path}...")
+    
+    # 7z solid archives compress zeros incredibly well. 
+    # We create a 10MB zero file and compress it.
+    with open("bomb_payload.dat", "wb") as f:
+        f.write(b'\x00' * (10 * 1024 * 1024))
+        
+    if os.path.exists(sz_path):
+        os.remove(sz_path)
+        
+    try:
+        # Use lzma2 with extreme compression
+        subprocess.run(['7z', 'a', '-t7z', '-m0=lzma2', '-mx=9', sz_path, 'bomb_payload.dat'], 
+                       check=True, stdout=subprocess.DEVNULL)
+    except Exception as e:
+        print(f"⚠️ Could not generate 7z bomb. Ensure 'p7zip' or '7z' CLI is installed. Error: {e}")
+        
+    if os.path.exists("bomb_payload.dat"):
+        os.remove("bomb_payload.dat")
 
 if __name__ == '__main__':
     main()
