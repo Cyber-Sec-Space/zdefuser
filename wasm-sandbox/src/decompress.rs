@@ -1,5 +1,5 @@
 use std::fs::{self, File};
-use std::io::{self, Read, copy};
+use std::io::{copy, Read};
 use std::path::Path;
 
 use flate2::read::GzDecoder;
@@ -24,7 +24,7 @@ pub fn extract_zip(
     let out_dir = Path::new(output_dir);
 
     for i in 0..total_files {
-        let mut file = match password {
+        let file = match password {
             Some(pwd) => match archive.by_index_decrypt(i, pwd.as_bytes()) {
                 Ok(f) => f,
                 Err(zip::result::ZipError::InvalidPassword) => {
@@ -104,14 +104,13 @@ pub fn extract_zip(
         if (*file.name()).ends_with('/') {
             fs::create_dir_all(&out_path).ok();
         } else {
-            if let Some(p) = out_path.parent() {
-                if !p.exists() {
+            if let Some(p) = out_path.parent()
+                && !p.exists() {
                     fs::create_dir_all(p).ok();
                 }
-            }
             let mut outfile =
                 File::create(&out_path).map_err(|e| format!("Write failed: {}", e))?;
-            copy(&mut file, &mut outfile).map_err(|e| format!("Extract failed: {}", e))?;
+            copy(&mut file.take(uncompressed_size), &mut outfile).map_err(|e| format!("Extract failed: {}", e))?;
 
             SandboxEvent::Progress {
                 current: (i + 1) as u32,
@@ -158,7 +157,7 @@ pub fn extract_tar(
 
     let mut count = 0;
     for entry in entries {
-        let mut entry = entry.map_err(|e| format!("Read entry failed: {}", e))?;
+        let entry = entry.map_err(|e| format!("Read entry failed: {}", e))?;
         let entry_path = entry
             .path()
             .map_err(|e| format!("Invalid path in entry: {}", e))?;
@@ -206,14 +205,13 @@ pub fn extract_tar(
         if entry_type.is_dir() {
             fs::create_dir_all(&out_path).ok();
         } else if entry_type.is_file() {
-            if let Some(p) = out_path.parent() {
-                if !p.exists() {
+            if let Some(p) = out_path.parent()
+                && !p.exists() {
                     fs::create_dir_all(p).ok();
                 }
-            }
             let mut outfile =
                 File::create(&out_path).map_err(|e| format!("Write failed: {}", e))?;
-            copy(&mut entry, &mut outfile).map_err(|e| format!("Extract failed: {}", e))?;
+            copy(&mut entry.take(uncompressed_size), &mut outfile).map_err(|e| format!("Extract failed: {}", e))?;
             SandboxEvent::Progress {
                 current: count,
                 total: 0, // Tar streams unknown total
@@ -288,8 +286,8 @@ pub fn extract_rar(
             return Err("Aborted due to security boundary violation".to_string());
         }
 
-        let uncompressed_size = file.unpacked_size as u64;
-        let compressed_size = file.head.data_area_size as u64;
+        let uncompressed_size = file.unpacked_size;
+        let compressed_size = file.head.data_area_size;
 
         if let Err(err_code) = sec_ctx.record_and_check(compressed_size, uncompressed_size) {
             SandboxEvent::Error {
@@ -420,13 +418,12 @@ pub fn extract_7z(
             if entry.is_directory() {
                 fs::create_dir_all(&out_path).ok();
             } else if entry.has_stream() {
-                if let Some(p) = out_path.parent() {
-                    if !p.exists() {
+                if let Some(p) = out_path.parent()
+                    && !p.exists() {
                         fs::create_dir_all(p).ok();
                     }
-                }
                 if let Ok(mut outfile) = File::create(&out_path) {
-                    let _ = copy(reader, &mut outfile);
+                    let _ = copy(&mut reader.take(uncompressed_size), &mut outfile);
                 }
                 SandboxEvent::Progress {
                     current: count,
