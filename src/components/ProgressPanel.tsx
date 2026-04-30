@@ -13,6 +13,7 @@ interface ProgressPanelProps {
   events: SandboxEvent[];
   isComplete: boolean;
   hasError: boolean;
+  needsPassword?: boolean;
   onReset: () => void;
 }
 
@@ -25,8 +26,10 @@ const formatBytes = (bytes: number, decimals = 2) => {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 };
 
-export const ProgressPanel: React.FC<ProgressPanelProps> = ({ events, isComplete, hasError, onReset }) => {
+export const ProgressPanel: React.FC<ProgressPanelProps> = ({ events, isComplete, hasError, needsPassword, onReset }) => {
   const logEndRef = useRef<HTMLDivElement>(null);
+  
+  const hasExtractedFiles = events.some((evt: any) => evt.type === 'complete' && evt.files_extracted > 0);
 
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -73,9 +76,9 @@ export const ProgressPanel: React.FC<ProgressPanelProps> = ({ events, isComplete
           <div className="panel-title">Sandbox Execution</div>
         </div>
         <div className="status-indicator">
-          <div className={`dot ${hasError ? 'error' : isComplete ? 'success' : 'scanning'}`}></div>
-          <span>{hasError ? 'Blocked' : isComplete ? 'Verified' : 'Processing'}</span>
-          {!isComplete && !hasError && (
+          <div className={`dot ${hasError ? 'error' : needsPassword ? 'warn' : isComplete ? 'success' : 'scanning'}`}></div>
+          <span>{hasError ? 'Blocked' : needsPassword ? 'Password Required' : isComplete ? 'Verified' : 'Processing'}</span>
+          {!isComplete && !hasError && !needsPassword && (
             <span style={{ opacity: 0.7, marginLeft: '4px' }}>
               ({formatBytes(events.filter(e => e.type === 'progress').reduce((acc, e) => acc + (e as any).bytes, 0))})
             </span>
@@ -85,7 +88,7 @@ export const ProgressPanel: React.FC<ProgressPanelProps> = ({ events, isComplete
 
       <div className="progress-bar-container">
         <div 
-          className={`progress-bar-fill ${percentage === undefined && !isComplete && !hasError ? 'indeterminate' : ''}`} 
+          className={`progress-bar-fill ${percentage === undefined && !isComplete && !hasError && !needsPassword ? 'indeterminate' : ''}`} 
           style={{ width: `${percentage !== undefined ? percentage : 100}%` }}
         />
       </div>
@@ -103,27 +106,33 @@ export const ProgressPanel: React.FC<ProgressPanelProps> = ({ events, isComplete
             return <div key={idx} className="log-line warn">WARN [{evt.code}]: {evt.file} - {evt.details}</div>;
           }
           if (evt.type === 'error') {
-            return <div key={idx} className="log-line error">ERR  [{evt.code}]: {evt.details}</div>;
+            const isPwd = evt.code === 'PASSWORD_REQUIRED' || evt.details.includes('Password required') || evt.details.includes('password');
+            return <div key={idx} className={`log-line ${isPwd ? 'warn' : 'error'}`}>ERR  [{evt.code}]: {evt.details}</div>;
           }
           if (evt.type === 'complete') {
             return (
               <div key={idx} className="log-line success">
-                Process finished. {evt.files_extracted} files verified, {evt.files_blocked} threats blocked.
+                Process finished. {evt.files_extracted} files verified, {evt.files_blocked} threats neutralized.
               </div>
             );
           }
           return null;
         })}
+        {hasError && !needsPassword && (
+          <div className="log-line error" style={{ marginTop: '0.5rem' }}>
+            Process aborted. 1 fatal threat blocked.
+          </div>
+        )}
         <div ref={logEndRef} />
       </div>
 
       <div className="panel-footer">
-        {(isComplete || hasError) && (
+        {(isComplete || hasError || needsPassword) && (
           <button className="secondary-btn" onClick={onReset}>
             Dismiss
           </button>
         )}
-        {isComplete && !hasError && (
+        {isComplete && !hasError && !needsPassword && hasExtractedFiles && (
           <button className="primary-btn" onClick={handleSaveTo}>
             Save to disk
           </button>
