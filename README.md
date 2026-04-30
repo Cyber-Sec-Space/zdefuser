@@ -25,7 +25,7 @@ Traditional OS archiving tools run with full native file permissions, providing 
 4. 🛡 **RCE / Buffer Overflow Immunity**: Even if the internal extraction engine suffers a buffer overflow, it will only trigger a Wasm linear memory trap crash. It is physically impossible to penetrate the host.
 5. 🪟 **Unicode Spoofing (RTLO) Protection**: Sanitizes malicious Right-to-Left Override sequences inside paths, ensuring stealthy `invoice[RTLO]xcod.exe` files cannot be masqueraded as harmless `.docx` files.
 6. 🔒 **Executable Bit Stripping (Unix Only)**: Through the Layer-3 Release Gate, any stealthy `+x` script permissions implanted by attackers are forcibly stripped, downgrading malicious executables to harmless text chunks.
-7. 🗄️ **Encrypted Vector Neutralization**: Safely handles AES-encrypted ZIPs and RARs. Even if an archive mandates a password and harbors malware, the decryption process and structural validation occur strictly within the quarantine zone.
+7. 🗄️ **Encrypted Vector Neutralization**: Safely handles AES-encrypted ZIPs, RARs, and 7z archives. Even if an archive mandates a password and harbors malware, the decryption process and structural validation occur strictly within the quarantine zone.
 8. 🕵️ **Network Leakage Prevention**: WASI network sockets are entirely disabled. Extracted spyware physically cannot ping external command-and-control servers or exfiltrate data.
 
 ### Zero-Trust Architecture Flow
@@ -126,7 +126,7 @@ You can run the script `python3 tests/generate_payloads.py` to generate authenti
 4. 🛡 **任意代碼執行 (RCE/Buffer Overflow) 免疫**：就算底層解壓涵式庫發生緩衝區溢位，也只會導致 Wasm 線性記憶體陷阱崩潰，物理上絕對無法滲透宿主機。
 5. 🪟 **Unicode 視覺詐騙 (RTLO) 防護**：過濾掉在檔名中安插的 U+202E 逆向反轉字元，讓偽裝成 `.docx` 的惡意可執行檔原形畢露並強行拋棄。
 6. 🔒 **剝除可執行權限 (Executable Bit Stripping - 限 Unix 系統)**：經過 Layer 3 釋放閘道 (Release Gate)，駭客植入的隱形 `+x` 可執行權限會被強制扒除，將腳本檔案降級為無害純文字。
-7. 🗄️ **加密向量中和 (Encrypted Vector Neutralization)**：完美安全處理附加密碼的 AES ZIP 與 RAR。即使解壓縮過程包含惡意負載或偽造的校驗碼，所有的解密運算與演算法審核皆強制關押在無菌隔離區內進行。
+7. 🗄️ **加密向量中和 (Encrypted Vector Neutralization)**：完美安全處理附加密碼的 AES ZIP、RAR 與 7z。即使解壓縮過程包含惡意負載或偽造的校驗碼，所有的解密運算與演算法審核皆強制關押在無菌隔離區內進行。
 8. 🕵️ **網路外洩阻隔 (No Network Leakage)**：徹底閹割 WASI 的網路通訊協定，從根源確保被解壓縮的間諜軟體絕對無法連回外部指令與控制 (C2) 伺服器傳送資料。
 
 ### 零信任沙箱隔離架構 (Zero-Trust Data Flow)
