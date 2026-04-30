@@ -1,7 +1,14 @@
 {
   "name": "zdefuser",
+  "description": "True Zero-Trust Sandboxed Archive Extraction",
   "private": true,
   "version": "1.1.0",
+  "author": "Cyber Sec Space",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Cyber-Sec-Space/zdefuser.git"
+  },
+  "homepage": "https://zdefuser.cyber-sec.space/",
   "license": "AGPL-3.0-or-later",
   "type": "module",
   "scripts": {
