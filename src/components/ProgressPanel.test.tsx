@@ -73,7 +73,7 @@ describe('ProgressPanel Component', () => {
     // Suppress alert during test
     window.alert = jest.fn();
     
-    render(<ProgressPanel events={[]} isComplete={true} hasError={false} onReset={mockOnReset} />);
+    render(<ProgressPanel events={[{ type: 'complete', files_extracted: 1 }] as any} isComplete={true} hasError={false} onReset={mockOnReset} />);
     fireEvent.click(screen.getByText('Save to disk'));
     
     await new Promise(process.nextTick);
@@ -87,7 +87,7 @@ describe('ProgressPanel Component', () => {
     (open as jest.Mock).mockRejectedValue('Canceled by user');
     window.alert = jest.fn();
     console.error = jest.fn();
-    render(<ProgressPanel events={[]} isComplete={true} hasError={false} onReset={mockOnReset} />);
+    render(<ProgressPanel events={[{ type: 'complete', files_extracted: 1 }] as any} isComplete={true} hasError={false} onReset={mockOnReset} />);
     fireEvent.click(screen.getByText('Save to disk'));
     await new Promise(process.nextTick);
     expect(window.alert).toHaveBeenCalledWith("Failed to save: Canceled by user");
@@ -95,7 +95,7 @@ describe('ProgressPanel Component', () => {
 
   it('handles save process resolving to null (user cancelled dialog)', async () => {
     (open as jest.Mock).mockResolvedValue(null);
-    render(<ProgressPanel events={[]} isComplete={true} hasError={false} onReset={mockOnReset} />);
+    render(<ProgressPanel events={[{ type: 'complete', files_extracted: 1 }] as any} isComplete={true} hasError={false} onReset={mockOnReset} />);
     fireEvent.click(screen.getByText('Save to disk'));
     await new Promise(process.nextTick);
     expect(invoke).not.toHaveBeenCalled();
