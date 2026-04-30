@@ -79,4 +79,4 @@ pub fn run_wasm_sandbox(
 
     Ok(())
 }
-// Force host rebuild after updating Wasm payload!
+// Force host rebuild after updating Wasm payload! (Fix threats neutralized)

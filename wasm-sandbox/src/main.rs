@@ -52,18 +52,19 @@ fn main() {
             decompress::extract_tar(&cmd.archive_path, &cmd.output_dir, false, &cmd.limits)
         } else if arch_lower.ends_with(".tar.gz") || arch_lower.ends_with(".tgz") {
             decompress::extract_tar(&cmd.archive_path, &cmd.output_dir, true, &cmd.limits)
-        } else if arch_lower.ends_with(".7z") {
-            decompress::extract_7z(&cmd.archive_path, &cmd.output_dir, cmd.password.as_deref(), &cmd.limits)
         } else {
             Err("Unsupported format".to_string())
         };
 
         if let Err(e) = result {
-            SandboxEvent::Error {
-                code: "EXTRACT_FAILED".to_string(),
-                details: e,
+            // Only emit EXTRACT_FAILED if it's not a PASSWORD_REQUIRED which was already emitted
+            if !e.starts_with("Password required") {
+                SandboxEvent::Error {
+                    code: "EXTRACT_FAILED".to_string(),
+                    details: e,
+                }
+                .send();
             }
-            .send();
         }
     } else {
         SandboxEvent::Error {

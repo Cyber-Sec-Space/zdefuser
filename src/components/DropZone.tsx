@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import './DropZone.css';
-import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
 
 interface DropZoneProps {
@@ -31,14 +30,9 @@ export const DropZone: React.FC<DropZoneProps> = ({ onAnalyzeStarted, password, 
     }
     
     setError(null);
-    try {
-      const pwdArg = password.trim() ? password.trim() : undefined;
-      onAnalyzeStarted(filePath, pwdArg);
-      await invoke('analyze_archive', { archivePath: filePath, password: pwdArg });
-    } catch (err) {
-      console.error("Failed to analyze:", err);
-      setError(String(err));
-    }
+    setError(null);
+    const pwdArg = password.trim() ? password.trim() : undefined;
+    onAnalyzeStarted(filePath, pwdArg);
   };
 
   const handleDrop = async (e: React.DragEvent) => {

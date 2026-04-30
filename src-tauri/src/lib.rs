@@ -5,6 +5,7 @@ pub mod commands;
 pub mod release;
 pub mod sandbox;
 pub mod security;
+pub mod sevenz;
 pub mod wasm;
 
 pub fn build_menu(app: &AppHandle) -> tauri::Result<Menu<Wry>> {

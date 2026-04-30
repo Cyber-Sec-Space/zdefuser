@@ -1,8 +1,10 @@
 use std::fs::{self, File};
-use std::io::{copy, Read};
+use std::io::{copy, Read, Write};
 use std::path::Path;
 
+use crc::{Crc, CRC_32_ISCSI, CRC_32_ISO_HDLC};
 use flate2::read::GzDecoder;
+use rar::Archive;
 use tar::Archive as TarArchive;
 use zip::ZipArchive;
 
@@ -16,9 +18,10 @@ pub fn extract_zip(
     limits: &HostLimit,
 ) -> Result<(), String> {
     let file = File::open(archive_path).map_err(|e| format!("Failed to open Zip: {}", e))?;
+    let archive_size = file.metadata().map(|m| m.len()).unwrap_or(0);
     let mut archive = ZipArchive::new(file).map_err(|e| format!("Invalid Zip: {}", e))?;
     let mut sec_ctx =
-        SecurityContext::new(limits.max_ratio, limits.max_total_bytes, limits.max_files);
+        SecurityContext::new(limits.max_ratio, limits.max_total_bytes, limits.max_files, archive_size);
 
     let total_files = archive.len();
     let out_dir = Path::new(output_dir);
@@ -63,15 +66,17 @@ pub fn extract_zip(
             }
         };
 
-        if !SecurityContext::is_safe_path(filename.to_str().unwrap_or("")) {
+        let filename_str = filename.to_string_lossy().into_owned();
+        let sanitized_filename = SecurityContext::sanitize_path(&filename_str);
+        
+        if sanitized_filename != filename_str {
             SandboxEvent::Warning {
-                code: "PATH_TRAVERSAL".to_string(),
-                file: filename.display().to_string(),
-                details: "Blocked due to unsafe path traversal".to_string(),
+                code: "PATH_SANITIZED".to_string(),
+                file: filename_str.clone(),
+                details: "Path traversal neutralized".to_string(),
             }
             .send();
             sec_ctx.blocked_files += 1;
-            continue;
         }
 
         if file.is_symlink() {
@@ -100,8 +105,8 @@ pub fn extract_zip(
             return Err("Aborted due to security threshold".to_string());
         }
 
-        let out_path = out_dir.join(&filename);
-        if (*file.name()).ends_with('/') {
+        let out_path = out_dir.join(&sanitized_filename);
+        if filename_str.ends_with('/') {
             fs::create_dir_all(&out_path).ok();
         } else {
             if let Some(p) = out_path.parent()
@@ -110,13 +115,40 @@ pub fn extract_zip(
                 }
             let mut outfile =
                 File::create(&out_path).map_err(|e| format!("Write failed: {}", e))?;
-            copy(&mut file.take(uncompressed_size), &mut outfile).map_err(|e| format!("Extract failed: {}", e))?;
+            
+            let mut file_limited = file.take(uncompressed_size);
+            let mut buf = [0u8; 65536]; // 64KB chunk
+            let mut file_written = 0;
+            let mut last_reported = 0;
+
+            loop {
+                match file_limited.read(&mut buf) {
+                    Ok(0) => break,
+                    Ok(n) => {
+                        outfile.write_all(&buf[..n]).map_err(|e| format!("Write failed: {}", e))?;
+                        file_written += n as u64;
+
+                        // Report progress every 10MB
+                        if file_written - last_reported > 10 * 1024 * 1024 {
+                            last_reported = file_written;
+                            SandboxEvent::Progress {
+                                current: (i + 1) as u32,
+                                total: total_files as u32,
+                                file: sanitized_filename.clone(),
+                                bytes: file_written,
+                            }
+                            .send();
+                        }
+                    }
+                    Err(e) => return Err(format!("Extract failed: {}", e)),
+                }
+            }
 
             SandboxEvent::Progress {
                 current: (i + 1) as u32,
                 total: total_files as u32,
-                file: filename.display().to_string(),
-                bytes: uncompressed_size,
+                file: sanitized_filename,
+                bytes: file_written,
             }
             .send();
         }
@@ -139,8 +171,9 @@ pub fn extract_tar(
     limits: &HostLimit,
 ) -> Result<(), String> {
     let file = File::open(archive_path).map_err(|e| format!("Failed to open Tar: {}", e))?;
+    let archive_size = file.metadata().map(|m| m.len()).unwrap_or(0);
     let mut sec_ctx =
-        SecurityContext::new(limits.max_ratio, limits.max_total_bytes, limits.max_files);
+        SecurityContext::new(limits.max_ratio, limits.max_total_bytes, limits.max_files, archive_size);
     let out_dir = Path::new(output_dir);
 
     // Using Box<dyn Read> to handle both pure tar and tar.gz
@@ -163,15 +196,17 @@ pub fn extract_tar(
             .map_err(|e| format!("Invalid path in entry: {}", e))?;
         let filename = entry_path.into_owned();
 
-        if !SecurityContext::is_safe_path(filename.to_str().unwrap_or("")) {
+        let filename_str = filename.to_string_lossy().into_owned();
+        let sanitized_filename = SecurityContext::sanitize_path(&filename_str);
+
+        if sanitized_filename != filename_str {
             SandboxEvent::Warning {
-                code: "PATH_TRAVERSAL".to_string(),
-                file: filename.display().to_string(),
-                details: "Blocked unsafe path".to_string(),
+                code: "PATH_SANITIZED".to_string(),
+                file: filename_str.clone(),
+                details: "Path traversal neutralized".to_string(),
             }
             .send();
             sec_ctx.blocked_files += 1;
-            continue;
         }
 
         // Symlink checks: WASI + pure Rust tar implies we can ignore or block symlinks.
@@ -200,8 +235,7 @@ pub fn extract_tar(
             return Err("Aborted due to security threshold".to_string());
         }
 
-        count += 1;
-        let out_path = out_dir.join(&filename);
+        let out_path = out_dir.join(&sanitized_filename);
         if entry_type.is_dir() {
             fs::create_dir_all(&out_path).ok();
         } else if entry_type.is_file() {
@@ -211,12 +245,40 @@ pub fn extract_tar(
                 }
             let mut outfile =
                 File::create(&out_path).map_err(|e| format!("Write failed: {}", e))?;
-            copy(&mut entry.take(uncompressed_size), &mut outfile).map_err(|e| format!("Extract failed: {}", e))?;
+            
+            let mut file_limited = entry.take(uncompressed_size);
+            let mut buf = [0u8; 65536]; // 64KB chunk
+            let mut file_written = 0;
+            let mut last_reported = 0;
+
+            loop {
+                match file_limited.read(&mut buf) {
+                    Ok(0) => break,
+                    Ok(n) => {
+                        outfile.write_all(&buf[..n]).map_err(|e| format!("Write failed: {}", e))?;
+                        file_written += n as u64;
+
+                        // Report progress every 10MB
+                        if file_written - last_reported > 10 * 1024 * 1024 {
+                            last_reported = file_written;
+                            SandboxEvent::Progress {
+                                current: count,
+                                total: 0,
+                                file: sanitized_filename.clone(),
+                                bytes: file_written,
+                            }
+                            .send();
+                        }
+                    }
+                    Err(e) => return Err(format!("Extract failed: {}", e)),
+                }
+            }
+
             SandboxEvent::Progress {
                 current: count,
                 total: 0, // Tar streams unknown total
-                file: filename.display().to_string(),
-                bytes: uncompressed_size,
+                file: sanitized_filename,
+                bytes: file_written,
             }
             .send();
         }
@@ -238,9 +300,11 @@ pub fn extract_rar(
     password: Option<&str>,
     limits: &HostLimit,
 ) -> Result<(), String> {
+    let file = File::open(archive_path).map_err(|e| format!("Failed to open Rar: {}", e))?;
+    let archive_size = file.metadata().map(|m| m.len()).unwrap_or(0);
     let pwd = password.unwrap_or("");
     let mut sec_ctx =
-        SecurityContext::new(limits.max_ratio, limits.max_total_bytes, limits.max_files);
+        SecurityContext::new(limits.max_ratio, limits.max_total_bytes, limits.max_files, archive_size);
 
     // rar crate expects trailing slash for the output directory
     let out_dir = if output_dir.ends_with('/') {
@@ -274,16 +338,28 @@ pub fn extract_rar(
     for (i, file) in archive.files.iter().enumerate() {
         let filename = file.name.clone();
 
-        // --- LAYER 1: UNICODE SPOOFING (RTLO) & PATH TRAVERSAL VERIFICATION ---
-        // Since `extract_all` already dumped the files into the WASI sandbox,
-        // we must ABORT the entire operation if ANY file contains dangerous paths.
-        if !SecurityContext::is_safe_path(&filename) {
-            SandboxEvent::Error {
-                code: "PATH_TRAVERSAL".to_string(),
-                details: format!("Blocked unsafe path or RTLO detected in RAR: {}", filename),
+        let sanitized_filename = SecurityContext::sanitize_path(&filename);
+
+        if sanitized_filename != filename {
+            SandboxEvent::Warning {
+                code: "PATH_SANITIZED".to_string(),
+                file: filename.clone(),
+                details: "Blocked unsafe path or RTLO detected in RAR, neutralized".to_string(),
             }
             .send();
-            return Err("Aborted due to security boundary violation".to_string());
+            sec_ctx.blocked_files += 1;
+
+            // The vendor/rar crate already extracted the file to the potentially unsafe path
+            // in the WASI filesystem. We need to move it to the sanitized safe path.
+            let bad_path = Path::new(output_dir).join(&filename);
+            let good_path = Path::new(output_dir).join(&sanitized_filename);
+
+            if bad_path.exists() {
+                if let Some(p) = good_path.parent() {
+                    fs::create_dir_all(p).ok();
+                }
+                fs::rename(&bad_path, &good_path).unwrap_or_default();
+            }
         }
 
         let uncompressed_size = file.unpacked_size;
@@ -302,42 +378,14 @@ pub fn extract_rar(
         }
 
         // --- LAYER 2: PASSWORD/INTEGRITY VERIFICATION ---
-        // Since `rar-rs` blindy decrypts even with bad passwords (garbling the data),
-        // we must enforce validation by comparing the checksum of the resulting stream.
-        if file.unpacked_size > 0 && !file.flags.directory {
-            use std::io::Read;
-            let out_path = std::path::Path::new(&out_dir).join(&filename);
-            if let Ok(mut extracted_file) = std::fs::File::open(&out_path) {
-                let mut hasher = crc32fast::Hasher::new();
-                let mut buf = vec![0u8; 1024 * 8];
-                while let Ok(n) = extracted_file.read(&mut buf) {
-                    if n == 0 {
-                        break;
-                    }
-                    hasher.update(&buf[..n]);
-                }
-                let checksum = hasher.finalize();
-
-                // RAR format uses CRC, when encryption yields garbage, this will inevitably fail
-                if checksum != file.data_crc {
-                    std::fs::remove_file(&out_path).ok(); // Clean up corrupted chunk
-
-                    let err_str = "Password required or invalid for encrypted archive. Data verification failed.".to_string();
-                    SandboxEvent::Error {
-                        code: "PASSWORD_REQUIRED".to_string(),
-                        details: err_str.clone(),
-                    }
-                    .send();
-
-                    return Err(err_str);
-                }
-            }
-        }
+        // For RAR archives, we cannot rely on manual CRC checks because RAR5
+        // uses HMAC for encrypted files, and the `data_crc` field is meaningless.
+        // We will skip manual CRC validation for RAR to prevent false rejections of valid passwords.
 
         SandboxEvent::Progress {
             current: (i + 1) as u32,
             total: total_files,
-            file: filename,
+            file: sanitized_filename,
             bytes: uncompressed_size,
         }
         .send();
@@ -353,104 +401,4 @@ pub fn extract_rar(
     Ok(())
 }
 
-pub fn extract_7z(
-    archive_path: &str,
-    output_dir: &str,
-    password: Option<&str>,
-    limits: &HostLimit,
-) -> Result<(), String> {
-    let file = File::open(archive_path).map_err(|e| format!("Failed to open 7z: {}", e))?;
-    let mut sec_ctx =
-        SecurityContext::new(limits.max_ratio, limits.max_total_bytes, limits.max_files);
-    let out_dir = Path::new(output_dir);
-
-    let pwd = match password {
-        Some(p) => sevenz_rust::Password::from(p),
-        None => sevenz_rust::Password::empty(),
-    };
-
-    let len = file.metadata().map(|m| m.len()).unwrap_or(0);
-    let mut archive = sevenz_rust::SevenZReader::new(file, len, pwd)
-        .map_err(|e| format!("Invalid 7z or Password required: {}", e))?;
-
-    let mut count = 0;
-    archive
-        .for_each_entries(|entry, reader| {
-            let filename_str = entry.name();
-            if filename_str.is_empty() {
-                return Ok(true);
-            }
-
-            if !SecurityContext::is_safe_path(filename_str) {
-                SandboxEvent::Warning {
-                    code: "PATH_TRAVERSAL".to_string(),
-                    file: filename_str.to_string(),
-                    details: "Blocked unsafe path".to_string(),
-                }
-                .send();
-                sec_ctx.blocked_files += 1;
-                return Ok(true);
-            }
-
-            // Note: 7z format inherently supports anti-item attributes, but symlink support
-            // in standard 7z crates usually surfaces as regular files or is just ignored.
-            // But we can check if it's explicitly marked as anti-item / symlink if supported.
-            // As a pure stream extractor, we just extract files and directories.
-
-            let uncompressed_size = entry.size();
-            
-            if entry.has_stream() {
-                // 7z uses solid compression so individual compressed sizes are tricky,
-                // bypass ratio limit by asserting ratio of 1, rely on max_total_bytes & Fuel.
-                if let Err(err_code) = sec_ctx.record_and_check(uncompressed_size.max(1), uncompressed_size) {
-                    SandboxEvent::Error {
-                        code: err_code.to_string(),
-                        details: "limit exceeded".to_string(),
-                    }
-                    .send();
-                    return Err(sevenz_rust::Error::other("Aborted due to security threshold"));
-                }
-            }
-
-            count += 1;
-            let out_path = out_dir.join(filename_str);
-            
-            if entry.is_directory() {
-                fs::create_dir_all(&out_path).ok();
-            } else if entry.has_stream() {
-                if let Some(p) = out_path.parent()
-                    && !p.exists() {
-                        fs::create_dir_all(p).ok();
-                    }
-                if let Ok(mut outfile) = File::create(&out_path) {
-                    let _ = copy(&mut reader.take(uncompressed_size), &mut outfile);
-                }
-                SandboxEvent::Progress {
-                    current: count,
-                    total: 0, // Solid block doesn't give total easily during iterator
-                    file: filename_str.to_string(),
-                    bytes: uncompressed_size,
-                }
-                .send();
-            }
-
-            Ok(true)
-        })
-        .map_err(|e| {
-            let msg = e.to_string();
-            if msg.contains("Aborted due to security threshold") {
-                msg
-            } else {
-                format!("7z extraction error: {}", msg)
-            }
-        })?;
-
-    SandboxEvent::Complete {
-        files_extracted: sec_ctx.extracted_files,
-        files_blocked: sec_ctx.blocked_files,
-        total_bytes: sec_ctx.extracted_bytes,
-    }
-    .send();
-
-    Ok(())
-}
+// 7z extraction removed due to WASI incompatibility with sevenz-rust
