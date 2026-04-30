@@ -10,6 +10,11 @@ All notable changes to this project will be documented in this file.
 ### Security
 - **Critical Audit Patch (Unbounded Stream Mitigation)**: Discovered and patched a theoretical header-spoofing vulnerability across the Wasm sandboxed Zip, Tar, and 7z parsers. Previously, `std::io::copy` relied solely on Wasm Fuel tracking to abort stream exhaustion. We now enforce `std::io::Read::take()` to mathematically truncate streams exactly at the declared header size, guaranteeing that spoofed payload expansions are physically severed.
 
+### Fixed
+- **7z Decompression Bomb False Positive**: Fixed a critical security accounting bug in `src-tauri/src/sevenz.rs` where the raw `uncompressed_size` of a 7z entry was prematurely added to the `extracted_bytes` accumulator before the extraction stream even began, triggering an instant `HIGH_RATIO_ZIP_BOMB` block with 0 bytes extracted.
+- **Frontend Threat Telemetry Desync**: Resolved a major race condition in `App.tsx` where synchronous Tauri API Rejections (`RUNTIME_ERROR`) forcefully overwrote critical `HIGH_RATIO_ZIP_BOMB` security logs injected via asynchronous MPSC channels, resulting in confusing "stuck" UI states instead of clear threat neutralization messages.
+- **Unsupported File Type Edge Case**: Repaired a logic bug where dropping unsupported files (e.g. `.exe`) implicitly invoked the Tauri backend engine, causing the React UI to desynchronize. Unsupported formats are now instantly blocked natively on the UI layer.
+
 ## [1.0.2] - 2026-04-23
 
 ### Fixed

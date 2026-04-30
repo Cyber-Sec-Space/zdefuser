@@ -10,6 +10,7 @@ function App() {
   const [events, setEvents] = useState<SandboxEvent[]>([]);
   const [isComplete, setIsComplete] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [needsPassword, setNeedsPassword] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [password, setPassword] = useState("");
   const passwordRef = useRef("");
@@ -26,13 +27,20 @@ function App() {
 
     listen<SandboxEvent>("sandbox_event", (event) => {
       const data = event.payload;
-      setEvents((prev) => [...prev, data]);
+      setEvents((prev) => {
+        const next = [...prev, data];
+        return next.length > 100 ? next.slice(next.length - 100) : next;
+      });
 
       if (data.type === 'complete') {
         setIsComplete(true);
       } else if (data.type === 'error' || data.type === 'warning' && data.code.includes('BLOCKED')) {
         if (data.type === 'error') {
-          setHasError(true);
+          if (data.code === 'PASSWORD_REQUIRED' || data.details?.includes('Password required') || data.details?.includes('password')) {
+            setNeedsPassword(true);
+          } else {
+            setHasError(true);
+          }
           setIsComplete(true);
         }
       }
@@ -43,23 +51,17 @@ function App() {
     listen<{ paths: string[] }>("tauri://drag-drop", async (event) => {
       if (!isProcessing && event.payload.paths.length > 0) {
         const path = event.payload.paths[0].toLowerCase();
-        
+
         if (!path.endsWith('.zip') && !path.endsWith('.tar') && !path.endsWith('.tar.gz') && !path.endsWith('.tgz') && !path.endsWith('.rar') && !path.endsWith('.7z')) {
-          handleAnalyzeStarted(path);
-          setHasError(true);
+          setIsProcessing(true);
           setEvents([{ type: 'error', code: 'UNSUPPORTED', details: 'Unsupported file type. Please use .zip, .rar, .7z, .tar, or .tgz' }]);
+          setHasError(true);
           setIsComplete(true);
           return;
         }
 
-        handleAnalyzeStarted(path);
-        try {
-          const pwdArg = passwordRef.current.trim() ? passwordRef.current.trim() : undefined;
-          await invoke('analyze_archive', { archivePath: event.payload.paths[0], password: pwdArg });
-        } catch (e) {
-          setHasError(true);
-          setEvents([{ type: 'error', code: 'RUNTIME_ERROR', details: String(e) }]);
-        }
+        const pwdArg = passwordRef.current.trim() ? passwordRef.current.trim() : undefined;
+        handleAnalyzeStarted(event.payload.paths[0], pwdArg);
       }
     }).then(f => {
       if (!isMounted) f(); else unlistenDrop = f;
@@ -80,11 +82,24 @@ function App() {
     };
   }, [isProcessing]);
 
-  const handleAnalyzeStarted = (_path: string, _password?: string) => {
+  const handleAnalyzeStarted = async (path: string, passwordArg?: string) => {
     setIsProcessing(true);
     setEvents([]);
     setIsComplete(false);
     setHasError(false);
+    setNeedsPassword(false);
+    
+    try {
+      await invoke('analyze_archive', { archivePath: path, password: passwordArg });
+    } catch (e) {
+      setHasError(true);
+      setIsComplete(true);
+      setEvents(prev => {
+        const hasSpecificError = prev.some(p => p.type === 'error' && p.code !== 'RUNTIME_ERROR');
+        if (hasSpecificError) return prev;
+        return [...prev, { type: 'error', code: 'RUNTIME_ERROR', details: String(e) }];
+      });
+    }
   };
 
   const handleReset = () => {
@@ -92,13 +107,14 @@ function App() {
     setEvents([]);
     setIsComplete(false);
     setHasError(false);
+    setNeedsPassword(false);
   };
 
   return (
     <div className="app-container">
       <div className="header">
         <h1>
-          <img src="/logo.png" alt="ZDefuser Logo" width={28} height={28} style={{ backgroundColor: 'transparent' }} />
+          <img src="/logo.png" alt="ZDefuser Logo" style={{ height: '1.2em', width: '1.2em', backgroundColor: 'transparent', objectFit: 'contain', marginRight: '-0.09em' }} />
           <span className="text-gradient">Defuser</span>
         </h1>
         {!isProcessing && <p>Zero-Trust Sandboxed Extraction</p>}
@@ -106,8 +122,8 @@ function App() {
 
       <div className="main-content">
         {!isProcessing ? (
-          <DropZone 
-            onAnalyzeStarted={handleAnalyzeStarted} 
+          <DropZone
+            onAnalyzeStarted={handleAnalyzeStarted}
             password={password}
             setPassword={setPassword}
           />
@@ -116,6 +132,7 @@ function App() {
             events={events}
             isComplete={isComplete}
             hasError={hasError}
+            needsPassword={needsPassword}
             onReset={handleReset}
           />
         )}

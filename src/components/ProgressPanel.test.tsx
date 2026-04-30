@@ -18,6 +18,14 @@ describe('ProgressPanel Component', () => {
     expect(screen.getByText('Processing')).toBeInTheDocument();
   });
 
+  it('formats bytes correctly', () => {
+    const events: any = [
+      { type: 'progress', file: 'large.txt', current: 0, total: 2000, bytes: 1048576 } // 1 MB
+    ];
+    render(<ProgressPanel events={events} isComplete={false} hasError={false} onReset={mockOnReset} />);
+    expect(screen.getAllByText(/\(1 MB\)/).length).toBeGreaterThan(0);
+  });
+
   it('renders progress and warning events properly', () => {
     const events: any = [
       { type: 'progress', file: 'A.txt', total: 100, current: 50 },
@@ -36,7 +44,7 @@ describe('ProgressPanel Component', () => {
     render(<ProgressPanel events={events} isComplete={true} hasError={false} onReset={mockOnReset} />);
     
     expect(screen.getByText('Verified')).toBeInTheDocument();
-    expect(screen.getByText(/Process finished. 10 files verified, 0 threats blocked./)).toBeInTheDocument();
+    expect(screen.getByText(/Process finished. 10 files verified, 0 threats neutralized./)).toBeInTheDocument();
     
     expect(screen.getByText('Dismiss')).toBeInTheDocument();
     expect(screen.getByText('Save to disk')).toBeInTheDocument();
@@ -50,6 +58,7 @@ describe('ProgressPanel Component', () => {
     render(<ProgressPanel events={events} isComplete={true} hasError={true} onReset={mockOnReset} />);
     expect(screen.getByText('Blocked')).toBeInTheDocument();
     expect(screen.getByText(/ERR \[ZIP_BOMB\]: Memory Limit/)).toBeInTheDocument();
+    expect(screen.getByText(/Process aborted. 1 fatal threat blocked./)).toBeInTheDocument();
   });
 
   it('calls onReset when dismiss button is clicked', () => {
