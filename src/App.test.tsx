@@ -109,8 +109,33 @@ describe('App Root Component', () => {
     await act(async () => {
       sandboxCallback({ payload: { type: 'error', code: 'FATAL', details: 'crashed' } });
     });
-    
     expect(screen.getByText('Blocked')).toBeInTheDocument();
+  });
+
+  it('handles password required events', async () => {
+    let sandboxCallback: any;
+    let dropCallback: any;
+
+    (event.listen as jest.Mock).mockImplementation((evtName, cb) => {
+      if (evtName === 'sandbox_event') sandboxCallback = cb;
+      if (evtName === 'tauri://drag-drop') dropCallback = cb;
+      return Promise.resolve(jest.fn());
+    });
+
+    render(<App />);
+    await act(async () => {
+      await new Promise(process.nextTick);
+    });
+
+    await act(async () => {
+      dropCallback({ payload: { paths: ['/encrypted.zip'] } });
+    });
+
+    await act(async () => {
+      sandboxCallback({ payload: { type: 'error', code: 'PASSWORD_REQUIRED', details: 'password required' } });
+    });
+
+    expect(screen.getByText('Password Required')).toBeInTheDocument();
   });
 
   it('ignores drop events when already processing or empty paths', async () => {

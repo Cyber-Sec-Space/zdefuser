@@ -3,7 +3,6 @@ import '@testing-library/jest-dom';
 import { DropZone } from './DropZone';
 import { useState } from 'react';
 import { open } from '@tauri-apps/plugin-dialog';
-import { invoke } from '@tauri-apps/api/core';
 
 const TestDropZone = (props: any) => {
   const [pwd, setPwd] = useState("");
@@ -39,7 +38,6 @@ describe('DropZone Component', () => {
 
   it('handles successful file selection', async () => {
     (open as jest.Mock).mockResolvedValue('/fake/path/test.zip');
-    (invoke as jest.Mock).mockResolvedValue(true);
     
     const { container } = render(<TestDropZone onAnalyzeStarted={mockOnAnalyzeStarted} />);
     const dropZone = container.firstChild as HTMLElement;
@@ -51,12 +49,10 @@ describe('DropZone Component', () => {
     
     expect(open).toHaveBeenCalled();
     expect(mockOnAnalyzeStarted).toHaveBeenCalledWith('/fake/path/test.zip', undefined);
-    expect(invoke).toHaveBeenCalledWith('analyze_archive', { archivePath: '/fake/path/test.zip', password: undefined });
   });
 
   it('handles successful file selection with password', async () => {
     (open as jest.Mock).mockResolvedValue('/fake/path/test.zip');
-    (invoke as jest.Mock).mockResolvedValue(true);
     
     const { container } = render(<TestDropZone onAnalyzeStarted={mockOnAnalyzeStarted} />);
     
@@ -78,7 +74,6 @@ describe('DropZone Component', () => {
     
     expect(open).toHaveBeenCalled();
     expect(mockOnAnalyzeStarted).toHaveBeenCalledWith('/fake/path/test.zip', 'secret123');
-    expect(invoke).toHaveBeenCalledWith('analyze_archive', { archivePath: '/fake/path/test.zip', password: 'secret123' });
   });
 
   it('handles invalid file extension', async () => {
@@ -95,21 +90,7 @@ describe('DropZone Component', () => {
     expect(mockOnAnalyzeStarted).not.toHaveBeenCalled();
   });
 
-  it('handles analysis error and manual dialog cancellation', async () => {
-    console.error = jest.fn();
-    (open as jest.Mock).mockResolvedValue('/fake/path/test.zip');
-    (invoke as jest.Mock).mockRejectedValue('Backend error');
-    
-    const { container } = render(<TestDropZone onAnalyzeStarted={mockOnAnalyzeStarted} />);
-    const dropZone = container.firstChild as HTMLElement;
-    fireEvent.click(dropZone);
-    
-    await act(async () => {
-      await new Promise(process.nextTick);
-    });
-    
-    expect(screen.getByText('Backend error')).toBeInTheDocument();
-  });
+
   
   it('handles dialog rejection', async () => {
     console.error = jest.fn();
