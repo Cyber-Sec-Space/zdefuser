@@ -1,6 +1,6 @@
 [package]
 name = "ZDefuser"
-version = "1.0.2"
+version = "1.1.0"
 license = "AGPL-3.0-or-later"
 description = "A Tauri App"
 authors = ["you"]
@@ -28,5 +28,9 @@ wasmtime-wasi = "29.0.0"
 cap-std = "3.4.0"
 tempfile = "3.10"
 walkdir = "2.5"
+sevenz-rust = { version = "0.6.1", features = ["aes256"] }
 tokio = { version = "1.0", features = ["sync", "io-util", "process"] }
 tauri-plugin-dialog = "2.7.0"
+
+[dev-dependencies]
+tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
