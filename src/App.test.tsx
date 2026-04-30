@@ -270,4 +270,72 @@ describe('App Root Component', () => {
     
     expect(invoke).toHaveBeenCalledWith('analyze_archive', { archivePath: '/good_with_pwd.zip', password: 'globalpwd' });
   });
+
+  it('truncates events if more than 100', async () => {
+    let sandboxCallback: any;
+    let dropCallback: any;
+
+    (event.listen as jest.Mock).mockImplementation((evtName, cb) => {
+      if (evtName === 'sandbox_event') sandboxCallback = cb;
+      if (evtName === 'tauri://drag-drop') dropCallback = cb;
+      return Promise.resolve(jest.fn());
+    });
+
+    render(<App />);
+    await act(async () => {
+      await new Promise(process.nextTick);
+    });
+
+    await act(async () => {
+      dropCallback({ payload: { paths: ['/some.zip'] } });
+    });
+
+    await act(async () => {
+      for (let i = 0; i < 105; i++) {
+        sandboxCallback({ payload: { type: 'progress', file: `f${i}.txt`, current: 10, total: 100, bytes: 0 } });
+      }
+    });
+
+    // We shouldn't see f0.txt because it should be truncated
+    expect(screen.queryByText(/Extracting: f0.txt/)).not.toBeInTheDocument();
+    expect(screen.getByText(/Extracting: f104.txt/)).toBeInTheDocument();
+  });
+
+  it('does not overwrite specific error with runtime error', async () => {
+    let dropCallback: any;
+    let sandboxCallback: any;
+    (event.listen as jest.Mock).mockImplementation((evtName, cb) => {
+      if (evtName === 'tauri://drag-drop') dropCallback = cb;
+      if (evtName === 'sandbox_event') sandboxCallback = cb;
+      return Promise.resolve(jest.fn());
+    });
+
+    let rejectInvoke: any;
+    (invoke as jest.Mock).mockReturnValue(new Promise((_, reject) => {
+      rejectInvoke = reject;
+    }));
+
+    render(<App />);
+    await act(async () => {
+      await new Promise(process.nextTick);
+    });
+
+    // trigger drop
+    await act(async () => {
+      dropCallback({ payload: { paths: ['/some.zip'] } });
+    });
+
+    // invoke is pending. Now fire sandbox_event error
+    await act(async () => {
+      sandboxCallback({ payload: { type: 'error', code: 'SOME_SPECIFIC_ERROR', details: 'specific_threat' } });
+    });
+
+    // now reject invoke
+    await act(async () => {
+      rejectInvoke(new Error('runtime crash'));
+    });
+
+    // specific_threat should be kept and process aborted message should show, runtime crash should be ignored
+    expect(screen.getByText('Process aborted. 1 fatal threat blocked.')).toBeInTheDocument();
+  });
 });
