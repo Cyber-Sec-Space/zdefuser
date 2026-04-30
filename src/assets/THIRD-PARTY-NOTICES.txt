@@ -130,7 +130,7 @@ cooperation with the comm...
 
 --- RUST (BACKEND) DEPENDENCIES ---
 
-Crate: ZDefuser v1.0.2
+Crate: ZDefuser v1.1.0
 License: AGPL-3.0-or-later
 Repository: None
 ----------------------------------------
@@ -2515,6 +2515,11 @@ License: MIT
 Repository: https://github.com/tokio-rs/tokio
 ----------------------------------------
 
+Crate: tokio-macros v2.7.0
+License: MIT
+Repository: https://github.com/tokio-rs/tokio
+----------------------------------------
+
 Crate: tokio-util v0.7.18
 License: MIT
 Repository: https://github.com/tokio-rs/tokio
@@ -3460,7 +3465,7 @@ License: MIT
 Repository: https://github.com/z-galaxy/zbus/
 ----------------------------------------
 
-Crate: ZDefuser v1.0.2 (WASM Sandbox)
+Crate: ZDefuser v1.1.0 (WASM Sandbox)
 License: AGPL-3.0-or-later
 Repository: None
 ----------------------------------------
@@ -5841,6 +5846,11 @@ Repository: https://github.com/unicode-org/icu4x
 ----------------------------------------
 
 Crate: tokio v1.52.1 (WASM Sandbox)
+License: MIT
+Repository: https://github.com/tokio-rs/tokio
+----------------------------------------
+
+Crate: tokio-macros v2.7.0 (WASM Sandbox)
 License: MIT
 Repository: https://github.com/tokio-rs/tokio
 ----------------------------------------
