@@ -44,7 +44,7 @@ graph TD;
     F -->|Strict Error Validation| H[Abort & Destroy Env];
     G --> I{Layer 2 Integrity Check};
     
-    I -->|Fails Global Limits| H;
+    I -->|Exceeds 100GB Limit| H;
     I -->|Success| J[Stage for Release];
 ```
 
@@ -66,7 +66,7 @@ ZDefuser is distributed under a **Dual License Strategy**:
 You can grab the latest pre-compiled binaries from the **[GitHub Releases](https://github.com/Cyber-Sec-Space/zdefuser/releases)** page. We offer cross-platform support:
 - **Windows**: `.exe` and `.msi` installers.
 - **Linux**: `.AppImage` (Portable) and `.deb` (Debian/Ubuntu) packages.
-- **macOS**: `.dmg` bundles.
+- **macOS**: `.dmg` (Apple Silicon) bundles.
 
 > **🍎 macOS Security Notice (Unsigned App):**
 > Because this application is not natively code-signed with an Apple Developer Certificate, Gatekeeper will block the app upon first launch with a warning like "App is damaged and can't be opened".
@@ -99,6 +99,11 @@ npm run tauri dev
 ### Security Penetration Testing
 Included with built-in realistic penetration verification payloads.  
 You can run the script `python3 tests/generate_payloads.py` to generate authentic malicious archives, including Zip Bombs, Path Traversals, and executable hijacks, and witness the defensive mechanisms in action via the UI interface.
+
+> 🔑 **Default Payload Passwords**: 
+> - For the Python-generated encrypted `.zip` payload: **`infected`**
+> - For the pre-included `encrypted_test.rar` payload: **`test`**
+> - For manually generated `.7z` archives: **`password`**
 
 > _"In a zero-trust world, even air doesn't pass verification without inspecting its atoms."_ 
 
@@ -162,7 +167,7 @@ ZDefuser 專案內建了全自動化的第三方開源條款稽核系統 (`gener
 您可以直接前往專案的 **[GitHub Releases](https://github.com/Cyber-Sec-Space/zdefuser/releases)** 頁面下載最新編譯完成的跨平台安裝包：
 - **Windows**: 提供 `.exe` 取代檔與 `.msi` 安裝檔。
 - **Linux**: 提供 `.AppImage` (免安裝執行檔) 與 `.deb` (Debian/Ubuntu)。
-- **macOS**: 提供 `.dmg` 映像安裝檔。
+- **macOS**: 提供 `.dmg` 映像安裝檔 (限 Apple Silicon)。
 
 > **🍎 macOS 開啟失敗解決方案 (無數位憑證)：**
 > 由於目前專案尚未掛載 Apple 開發者數位憑證 (Apple Developer Certificate)，macOS 的安全機制 (Gatekeeper) 可能會跳出「檔案已損壞無法開啟」或「無法識別的開發者」的警告。
@@ -195,6 +200,11 @@ npm run tauri dev
 ### 測試驅動 (Security Payloads)
 內建真實駭客測試包 (Penetration Verification Payloads)：  
 您可以透過執行測試指令碼 `python3 tests/generate_payloads.py`，產生包含 Zip Bomb、Path Traversal 與可執行權限劫持的真實惡意壓縮包，並透過介面親自見證攔截防禦機制。
+
+> 🔑 **測試檔預設密碼**：
+> - 腳本產生的加密 `.zip` 測試檔密碼為：**`infected`**
+> - 內建的 `encrypted_test.rar` 密碼為：**`test`**
+> - 手動產生的 `.7z` 測試檔密碼為：**`password`**
 
 ---
 
