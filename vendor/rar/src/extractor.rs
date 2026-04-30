@@ -22,7 +22,7 @@ pub fn extract(
     let reader = RarReader::new(reader.take(data_area_size));
 
     // Initilize the decryption reader
-    let mut reader = RarAesReader::new(reader, file.clone(), password);
+    let mut reader = RarAesReader::new(reader, file.clone(), password)?;
 
     // loop over chunks of the data and write it to the files
     let mut data_buffer = [0u8; BUFFER_SIZE];

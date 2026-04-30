@@ -3,54 +3,53 @@ use std::path::{Component, Path};
 pub struct SecurityContext {
     pub max_ratio: u32,
     pub max_total_bytes: u64,
+    pub max_files: u32,
+    pub archive_size: u64,
     pub extracted_bytes: u64,
     pub extracted_files: u32,
     pub blocked_files: u32,
-    pub max_files: u32,
 }
 
 impl SecurityContext {
-    pub fn new(max_ratio: u32, max_total_bytes: u64, max_files: u32) -> Self {
+    pub fn new(max_ratio: u32, max_total_bytes: u64, max_files: u32, archive_size: u64) -> Self {
         Self {
             max_ratio,
             max_total_bytes,
+            max_files,
+            archive_size,
             extracted_bytes: 0,
             extracted_files: 0,
             blocked_files: 0,
-            max_files,
         }
     }
 
-    /// Check for Path Traversal in the extracted filename
-    pub fn is_safe_path(filepath: &str) -> bool {
+    /// Sanitize path to prevent Path Traversal and RTLO attacks.
+    /// It strips dangerous components (like `..`, `/`, `C:\`) and returns a safe relative path.
+    pub fn sanitize_path(filepath: &str) -> String {
         let path = Path::new(filepath);
-        if path.is_absolute() {
-            return false;
-        }
+        let mut sanitized = std::path::PathBuf::new();
 
-        // Must not contain any ParentDir ("..") components
+        // Only keep Normal components (file and folder names)
         for component in path.components() {
-            if matches!(component, Component::ParentDir | Component::RootDir | Component::Prefix(_)) {
-                return false;
+            if let Component::Normal(c) = component {
+                sanitized.push(c);
             }
         }
 
-        // Further deny if it includes backslashes or unexpected traversal tricks (though Path normalizes most)
-        if filepath.contains("..") || filepath.starts_with('/') || filepath.starts_with('\\') {
-            return false;
-        }
+        let mut result = sanitized.to_string_lossy().into_owned();
 
         // --- RTLO and Dangerous Unicode Filtering ---
-        // \u{202E} is Right-to-Left Override, often used to disguise extensions (e.g. txt.exe)
-        // \u{200F} is Right-to-Left Mark
-        // \u{202A} to \u{202F} are mostly bidirectional formatting codes
-        for c in filepath.chars() {
-            if c == '\u{202E}' || c == '\u{200F}' || ('\u{202A}'..='\u{202F}').contains(&c) {
-                return false; // Dangerous spoofing attempt
-            }
-        }
+        let bad_chars = [
+            '\0', '\x08', '\x09', '\x0A', '\x0D', 
+            '\u{202E}', '\u{200F}', '\u{202A}', '\u{202B}', '\u{202C}', '\u{202D}', '\u{202F}'
+        ];
+        result.retain(|c| !bad_chars.contains(&c));
 
-        true
+        if result.is_empty() {
+            "unnamed_sanitized_file".to_string()
+        } else {
+            result
+        }
     }
 
     /// Validate against zip bombs and limits
@@ -70,10 +69,19 @@ impl SecurityContext {
             return Err("TOTAL_SIZE_EXCEEDED");
         }
 
-        // Only check ratio if uncompressed size is decently big (e.g., >= 1 MB)
+        // 1. Check individual file ratio if compressed size is known
         if uncompressed_size >= 1_048_576 && compressed_size > 0 {
             let ratio = uncompressed_size / compressed_size;
             if ratio > self.max_ratio as u64 {
+                return Err("HIGH_RATIO_ZIP_BOMB");
+            }
+        }
+        
+        // 2. Check global ratio (Total Extracted vs Total Archive Size)
+        // This catches solid archives (7z, tar.gz) where individual compressed size is unknown
+        if self.archive_size > 0 {
+            let global_ratio = self.extracted_bytes / self.archive_size;
+            if global_ratio > self.max_ratio as u64 {
                 return Err("HIGH_RATIO_ZIP_BOMB");
             }
         }

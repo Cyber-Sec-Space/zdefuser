@@ -30,24 +30,34 @@ pub struct RarAesReader<R: Read> {
 
 impl<R: Read> RarAesReader<R> {
     /// Create a new decryption reader
-    pub fn new(reader: R, file: FileBlock, pwd: &str) -> RarAesReader<R> {
+    pub fn new(reader: R, file: FileBlock, pwd: &str) -> crate::error::Result<RarAesReader<R>> {
         let mut active = false;
         let mut decryptor = None;
 
         if let Some(f) = file.extra.file_encryption {
-            let key = generate_key(&f, pwd);
+            let iter_number = 2u32.pow(f.kdf_count.into());
+            let mut key_extended = [0u8; 64];
+            let _ = pbkdf2::<Hmac<Sha256>>(pwd.as_bytes(), &f.salt, iter_number, &mut key_extended);
+
+            if pwd.is_empty() {
+                return Err(crate::error::RarError::InvalidPassword);
+            }
+
+            let mut key = [0u8; 32];
+            key.copy_from_slice(&key_extended[0..32]);
+
             decryptor = Some(Aes256CbcDec::new(&key.into(), &f.init.into()));
             active = true;
         }
 
-        RarAesReader {
+        Ok(RarAesReader {
             reader,
             active,
             buffer: Vec::new(),
             buffer_pos: 0,
             decryptor,
             encrypted_buffer: Vec::new(),
-        }
+        })
     }
 }
 
@@ -147,7 +157,7 @@ fn test_aes_stream_disabled() {
     let cursor = Cursor::new(data);
     let file = FileBlock::default();
 
-    let mut reader = RarAesReader::new(cursor, file, "");
+    let mut reader = RarAesReader::new(cursor, file, "").unwrap();
     let mut buf = [0u8; 12];
     let read_bytes = reader.read(&mut buf).unwrap();
 

@@ -34,22 +34,38 @@ pub async fn analyze_archive(
         "limits": limits,
         "password": password
     })
-    .to_string();
+    .to_string() + "\n";
 
-    let (tx, mut rx) = tokio::sync::mpsc::channel(100);
+    let (tx, mut rx) = tokio::sync::mpsc::channel(50_000);
 
-    // Run wasm execution in a blocking thread to not block async runtime
-    let env_thread = env.clone();
+    let is_7z = archive_path.to_lowercase().ends_with(".7z");
 
-    let archive_size = std::fs::metadata(&archive_path)
-        .map(|m| m.len())
-        .unwrap_or(0);
-
-    let handle =
-        tokio::task::spawn_blocking(move || run_wasm_sandbox(&env_thread, cmd, archive_size, tx));
+    let handle = if is_7z {
+        let release_dir = env.release_dir();
+        let pwd_clone = password.clone();
+        let arc_path = archive_path.clone();
+        tokio::task::spawn_blocking(move || {
+            crate::sevenz::extract_7z(
+                &arc_path,
+                &release_dir,
+                pwd_clone.as_deref(),
+                100,
+                100 * 1024 * 1024 * 1024,
+                500_000,
+                tx
+            )
+        })
+    } else {
+        // Run wasm execution in a blocking thread to not block async runtime
+        let env_thread = env.clone();
+        let archive_size = std::fs::metadata(&archive_path)
+            .map(|m| m.len())
+            .unwrap_or(0);
+        tokio::task::spawn_blocking(move || run_wasm_sandbox(&env_thread, cmd, archive_size, tx))
+    };
 
     let mut had_error = false;
-    // Listen to wasm messages and forward them to frontend
+    // Listen to messages (from Wasm or Native 7z) and forward them to frontend
     while let Some(msg) = rx.recv().await {
         if let Ok(json_val) = serde_json::from_str::<serde_json::Value>(&msg) {
             if json_val.get("type").and_then(|t| t.as_str()) == Some("error") {
@@ -63,6 +79,13 @@ pub async fn analyze_archive(
 
     // LAYER 1: If Wasm Sandbox failed (RTLO, Fuel Limit, Zip Bomb ratio), DO NOT PROCEED.
     if had_error || wasm_result.is_err() {
+        if !had_error {
+            // Force emit an error so the frontend doesn't hang if the task failed silently
+            app.emit(
+                "sandbox_event",
+                json!({"type": "error", "code": "EXTRACT_FAILED", "details": "Sandbox analysis failed silently or panicked."}),
+            ).unwrap_or(());
+        }
         return Err(
             "Sandbox analysis failed due to a security violation or extraction error.".to_string(),
         );

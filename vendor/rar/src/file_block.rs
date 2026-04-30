@@ -9,7 +9,7 @@ use crate::vint::vint;
 
 use nom::bytes::complete::take;
 use nom::error::ErrorKind;
-use nom::number::complete::be_u32;
+use nom::number::complete::le_u32;
 
 /// FileBlock
 #[derive(PartialEq, Debug, Clone, Default)]
@@ -75,14 +75,14 @@ impl FileBlock {
 
         // check for time
         if file.flags.time {
-            let (i, mtime) = be_u32(input)?;
+            let (i, mtime) = le_u32(input)?;
             input = i;
             file.mtime = mtime;
         }
 
         // check for file crc data
         if file.flags.crc {
-            let (i, crc) = be_u32(input)?;
+            let (i, crc) = le_u32(input)?;
             input = i;
             file.data_crc = crc;
         }

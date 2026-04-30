@@ -34,7 +34,10 @@ impl SandboxEnv {
             .unwrap_or("input.archive");
         let target = self.temp_dir.path().join(file_name);
 
-        fs::copy(source_path, &target).map_err(|e| format!("Failed to copy input: {}", e))?;
+        // Try hardlink first for instant zero-copy setup. Fallback to full copy if crossing filesystems.
+        if fs::hard_link(source_path, &target).is_err() {
+            fs::copy(source_path, &target).map_err(|e| format!("Failed to copy input: {}", e))?;
+        }
 
         Ok(format!("/sandbox/{}", file_name))
     }

@@ -297,8 +297,8 @@ impl FileEncryptionVersion {
 /// about how the decrypt the file
 #[derive(PartialEq, Debug, Clone, Default)]
 pub struct FileEncryptionBlockFlags {
-    pw_check_data: bool,
-    tweaked_crc: bool,
+    pub pw_check_data: bool,
+    pub tweaked_crc: bool,
 }
 
 impl FileEncryptionBlockFlags {

@@ -22,8 +22,12 @@ pub fn move_and_strip_permissions(source_dir: &Path, target_dir: &Path) -> Resul
             if let Some(p) = target_path.parent() {
                 fs::create_dir_all(p).ok();
             }
-            fs::copy(entry.path(), &target_path)
-                .map_err(|e| format!("Copy failed for {}: {}", rel_path.display(), e))?;
+            // Try rename (move) first for instant zero-copy. Fallback to copy+remove if crossing filesystems.
+            if fs::rename(entry.path(), &target_path).is_err() {
+                fs::copy(entry.path(), &target_path)
+                    .map_err(|e| format!("Copy failed for {}: {}", rel_path.display(), e))?;
+                fs::remove_file(entry.path()).ok();
+            }
 
             // Strip executable permissions
             if let Ok(metadata) = fs::metadata(&target_path) {
@@ -31,9 +35,9 @@ pub fn move_and_strip_permissions(source_dir: &Path, target_dir: &Path) -> Resul
                 #[cfg(unix)]
                 {
                     let mode = perms.mode();
-                    // Remove executable bits for everyone (owner, group, others)
-                    // e.g. 0o755 (rwxr-xr-x) -> 0o644 (rw-r--r--)
-                    let new_mode = mode & !0o111;
+                    // Remove executable bits (0o111) AND all special bits like SUID/SGID (0o7000)
+                    // We only allow read and write bits (0o666)
+                    let new_mode = mode & 0o666;
                     perms.set_mode(new_mode);
                     let _ = fs::set_permissions(&target_path, perms);
                 }
