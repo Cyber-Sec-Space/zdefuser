@@ -14,10 +14,10 @@
 
 <h2 id="english">English</h2>
 
-**ZDefuser** is a highly secure archive extraction tool built for engineers and security researchers. By combining unidirectional WebAssembly (Wasm) isolation technology with the native OS interface, it analyzes and extracts `.zip`, `.rar`, `.7z`, `.tar`, and `.tar.gz / .tgz` files of unknown origins within a "purely physically isolated" sandbox. This effectively blocks malicious payloads from penetrating or damaging the host system during the exact moment of decompression.
+**ZDefuser** is a highly secure archive extraction tool built for engineers and security researchers. By combining unidirectional WebAssembly (Wasm) isolation technology with a hardened Native Rust backend, it analyzes and extracts `.zip`, `.rar`, `.tar`, and `.tar.gz / .tgz` files within a "purely physically isolated" Wasm sandbox, while safely routing highly-compressed `.7z` archives through a dedicated Native LZMA engine. This effectively blocks malicious payloads from penetrating or damaging the host system during the exact moment of decompression.
 
 ### Why ZDefuser?
-Traditional OS archiving tools run with full native file permissions, providing hackers a perfect window for exploitation. ZDefuser drops the payload into a WebAssembly sandbox—completely cut off from networking and native OS calls. This "sterile extraction" guarantees immunity against **8 advanced threat vectors**:
+Traditional OS archiving tools run with full native file permissions, providing hackers a perfect window for exploitation. ZDefuser drops the payload into a strictly controlled environment (either a WASI sandbox or a hardened native thread)—completely cut off from networking and native OS calls. This "sterile extraction" guarantees immunity against **8 advanced threat vectors**:
 
 1. 💣 **Zip Bomb & CPU DoS Defusion**: Enforces strict resource ratios (max 100x inflation / 100GB limits) and integrates **Dynamic Compute Rationing (Dynamic Fuel)** to intercept both volumetric memory exhaustion attacks and infinite-loop mathematical bombs.
 2. 🚫 **Path Traversal Blocking**: Drops any hazardous relative paths like `../../etc/passwd` attempting to escape the sandbox and overwrite the system.
@@ -32,14 +32,19 @@ Traditional OS archiving tools run with full native file permissions, providing 
 ```mermaid
 graph TD;
     A[User Drops Archive] --> B(Tauri Backend: Commands Layer);
-    B --> C{WASI Sandbox Execution};
     
-    C -->|Streaming I/O Extraction| D[Decompression Engine];
+    B -->|ZIP, RAR, TAR| C{WASI Sandbox Engine};
+    B -->|7Z Archive| N{Native Rust Engine};
+    
+    C -->|Streaming I/O Extraction| D[Wasm Decompression];
+    N -->|Solid Block Decryption| D2[Native LZMA Router];
+    
     D --> E{Security Context Verification};
+    D2 --> E;
     
-    E -->|Zip Bomb / 100GB Bypass| F[Trap: Wasm Crash];
-    E -->|RTLO / Symlink| F[Trap: Wasm Crash];
-    E -->|Clean Output| G[Sandbox Output Directory];
+    E -->|Zip Bomb / 100GB Bypass| F[Trap / Thread Abort];
+    E -->|RTLO / Symlink| F;
+    E -->|Clean Output| G[Virtual Output Directory];
     
     F -->|Strict Error Validation| H[Abort & Destroy Env];
     G --> I{Layer 2 Integrity Check};
@@ -110,10 +115,10 @@ You can run the script `python3 tests/generate_payloads.py` to generate authenti
 
 <h2 id="繁體中文">繁體中文</h2>
 
-**ZDefuser** 是一款專為工程師與資安研究員打造的極端安全解壓縮工具。透過單向的 WebAssembly (Wasm) 隔離技術結合原生 OS 介面，它能在「純粹物理隔離」的沙箱環境中，解析並提取來源不明的 `.zip`, `.rar`, `.7z`, `.tar` 與 `.tar.gz / .tgz` 壓縮檔，徹底阻斷任何惡意 Payload 在解壓縮的瞬間穿透或破壞宿主系統。
+**ZDefuser** 是一款專為工程師與資安研究員打造的極端安全解壓縮工具。透過單向的 WebAssembly (Wasm) 隔離技術結合強化的原生 Rust 引擎，它能在「純粹物理隔離」的 Wasm 沙箱環境中提取 `.zip`, `.rar`, `.tar` 與 `.tar.gz / .tgz` 壓縮檔，並將高壓縮率的 `.7z` 檔案完美分流至專屬的原生 LZMA 引擎處理，徹底阻斷任何惡意 Payload 在解壓縮的瞬間穿透或破壞宿主系統。
 
 ### 為什麼需要 ZDefuser？
-傳統的作業系統解壓工具具備過高的原生檔案權限，這讓駭客有機可乘。ZDefuser 將檔案丟進無實體網路、無作業系統呼叫權限的 WebAssembly 沙箱中進行「無菌抽取」，徹底免疫以下**八大進階解壓縮威脅向量**：
+傳統的作業系統解壓工具具備過高的原生檔案權限，這讓駭客有機可乘。ZDefuser 將檔案丟進受嚴格控制的環境（無網路的 WASI 沙箱或受限的原生執行緒）中進行「無菌抽取」，徹底免疫以下**八大進階解壓縮威脅向量**：
 
 1. 💣 **解壓炸彈與 CPU 劫持防殺 (Zip Bomb & CPU DoS)**：雙效合一。採用硬性資源比例上限 (最高 100 倍膨脹) 防禦記憶體溢出，並搭配 **動態算力配給制 (Dynamic Compute Rationing)** 依據檔案大小發放精準的 Wasmtime 運算燃料指令配額，幾秒內自動絞殺無窮迴圈型邏輯炸彈。
 2. 🚫 **目錄穿越 (Path Traversal)**：攔截所有 `../../etc/passwd` 等企圖跳脫沙箱覆寫系統檔案的危險路徑。
@@ -128,14 +133,19 @@ You can run the script `python3 tests/generate_payloads.py` to generate authenti
 ```mermaid
 graph TD;
     A[使用者拖曳壓縮包] --> B(Tauri 後端：指令層);
-    B --> C{WASI 沙箱執行環境};
     
-    C -->|串流抽取| D[解壓引擎];
+    B -->|ZIP, RAR, TAR| C{WASI 沙箱執行環境};
+    B -->|7Z 壓縮檔| N{原生 Rust 引擎};
+    
+    C -->|串流抽取| D[Wasm 解壓引擎];
+    N -->|固態區塊解密| D2[原生 LZMA 路由器];
+    
     D --> E{安全上下文審核};
+    D2 --> E;
     
-    E -->|發現 Zip 炸彈| F[觸發 Wasm 崩潰陷阱];
-    E -->|發現 RTLO/目錄穿越| F[觸發 Wasm 崩潰陷阱];
-    E -->|檢查通過| G[沙箱虛擬輸出區];
+    E -->|發現 Zip 炸彈| F[觸發 Wasm 崩潰 / 執行緒中斷];
+    E -->|發現 RTLO/目錄穿越| F;
+    E -->|檢查通過| G[虛擬輸出區];
     
     F -->|嚴格錯誤結算| H[強行中斷並銷毀環境];
     G --> I{Layer 2 總體積稽核};
